@@ -25,15 +25,15 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#2563EB",
-          light: "#60A5FA",
-          dark: "#1E40AF",
+          DEFAULT: "#D946EF", // Magenta Pink
+          light: "#FFDEE2", // Soft Pink
+          dark: "#BE185D", // Dark Pink
           foreground: "white",
         },
         secondary: {
-          DEFAULT: "#10B981",
-          light: "#34D399",
-          dark: "#059669",
+          DEFAULT: "#9b87f5", // Primary Purple
+          light: "#E5DEFF", // Soft Purple
+          dark: "#6E59A5", // Tertiary Purple
           foreground: "white",
         },
         destructive: {
