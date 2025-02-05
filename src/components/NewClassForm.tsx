@@ -40,7 +40,7 @@ const formSchema = z.object({
   level: z.string(),
   type: z.string(),
   days: z.array(z.string()).min(1).max(3),
-  time: z.string(),
+  times: z.record(z.string()),
 });
 
 const NewClassForm = () => {
@@ -48,8 +48,11 @@ const NewClassForm = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       days: [],
+      times: {},
     },
   });
+
+  const selectedDays = form.watch("days");
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     console.log(values);
@@ -156,6 +159,10 @@ const NewClassForm = () => {
                                   field.onChange(
                                     currentValue.filter((value) => value !== day.id)
                                   );
+                                  // Remove the time for this day when unchecked
+                                  const currentTimes = form.getValues("times");
+                                  delete currentTimes[day.id];
+                                  form.setValue("times", currentTimes);
                                 }
                               }}
                             />
@@ -174,30 +181,36 @@ const NewClassForm = () => {
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="time"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Horário</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o horário" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {hours.map((hour) => (
-                    <SelectItem key={hour} value={hour}>
-                      {hour}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {selectedDays.map((dayId) => (
+          <FormField
+            key={dayId}
+            control={form.control}
+            name={`times.${dayId}`}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  Horário -{" "}
+                  {weekDays.find((day) => day.id === dayId)?.label}
+                </FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o horário" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {hours.map((hour) => (
+                      <SelectItem key={hour} value={hour}>
+                        {hour}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        ))}
 
         <Button type="submit" className="w-full">
           Cadastrar turma
