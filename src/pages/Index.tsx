@@ -1,6 +1,37 @@
+
 import { Card } from "@/components/ui/card";
 import { Layout } from "@/components/Layout";
 import { Users, BookOpen, Calendar } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useState } from "react";
+import ClassDetailsDialog from "@/components/ClassDetailsDialog";
+
+// Mock data for the class that will be shown in the dialog
+const mockClassData = {
+  id: 1,
+  language: "Inglês",
+  level: "Avançado",
+  type: "Turma",
+  days: ["Segunda", "Quarta"],
+  time: "14:00",
+  students: [
+    {
+      id: 1,
+      name: "João Silva",
+      phone: "(11) 99999-9999",
+      email: "joao@email.com",
+      birthday: "1990-01-01",
+    },
+    {
+      id: 2,
+      name: "Maria Santos",
+      phone: "(11) 88888-8888",
+      email: "maria@email.com",
+      birthday: "1992-05-15",
+    },
+  ],
+  active: true,
+};
 
 const stats = [
   {
@@ -14,6 +45,7 @@ const stats = [
     value: "4",
     icon: BookOpen,
     color: "bg-secondary",
+    link: "/classes",
   },
   {
     title: "Aulas Esta Semana",
@@ -24,6 +56,11 @@ const stats = [
 ];
 
 const Index = () => {
+  const [selectedClass, setSelectedClass] = useState<typeof mockClassData | null>(
+    null
+  );
+  const [dialogOpen, setDialogOpen] = useState(false);
+
   return (
     <Layout>
       <div className="space-y-8">
@@ -37,15 +74,29 @@ const Index = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {stats.map((stat) => (
             <Card key={stat.title} className="p-6">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">{stat.title}</p>
-                  <p className="text-3xl font-bold mt-2">{stat.value}</p>
+              {stat.link ? (
+                <Link to={stat.link}>
+                  <div className="flex items-start justify-between cursor-pointer">
+                    <div>
+                      <p className="text-sm text-gray-600">{stat.title}</p>
+                      <p className="text-3xl font-bold mt-2">{stat.value}</p>
+                    </div>
+                    <div className={`${stat.color} p-3 rounded-lg`}>
+                      <stat.icon className="w-6 h-6 text-white" />
+                    </div>
+                  </div>
+                </Link>
+              ) : (
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600">{stat.title}</p>
+                    <p className="text-3xl font-bold mt-2">{stat.value}</p>
+                  </div>
+                  <div className={`${stat.color} p-3 rounded-lg`}>
+                    <stat.icon className="w-6 h-6 text-white" />
+                  </div>
                 </div>
-                <div className={`${stat.color} p-3 rounded-lg`}>
-                  <stat.icon className="w-6 h-6 text-white" />
-                </div>
-              </div>
+              )}
             </Card>
           ))}
         </div>
@@ -73,7 +124,11 @@ const Index = () => {
               ].map((aula) => (
                 <div
                   key={aula.turma}
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
+                  onClick={() => {
+                    setSelectedClass(mockClassData);
+                    setDialogOpen(true);
+                  }}
                 >
                   <div>
                     <p className="font-medium">{aula.turma}</p>
@@ -121,6 +176,14 @@ const Index = () => {
           </Card>
         </div>
       </div>
+
+      {selectedClass && (
+        <ClassDetailsDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          classData={selectedClass}
+        />
+      )}
     </Layout>
   );
 };
