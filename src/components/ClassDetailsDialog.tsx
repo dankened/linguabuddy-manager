@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Plus, PencilLine, Trash2 } from "lucide-react";
+import { Plus, PencilLine, Trash2, X } from "lucide-react";
 import { format } from "date-fns";
 import {
   ContextMenu,
@@ -130,40 +130,55 @@ const ClassDetailsDialog = ({
                   <Plus className="h-4 w-4" />
                 </Button>
               ) : (
-                <div className="flex gap-4 items-end mb-4">
-                  <div className="grid grid-cols-4 gap-4 flex-1">
-                    <Input
-                      placeholder="Nome"
-                      value={newStudent.name}
-                      onChange={(e) =>
-                        setNewStudent({ ...newStudent, name: e.target.value })
-                      }
-                    />
-                    <Input
-                      placeholder="Telefone"
-                      value={newStudent.phone}
-                      onChange={(e) =>
-                        setNewStudent({ ...newStudent, phone: e.target.value })
-                      }
-                    />
-                    <Input
-                      placeholder="E-mail"
-                      type="email"
-                      value={newStudent.email}
-                      onChange={(e) =>
-                        setNewStudent({ ...newStudent, email: e.target.value })
-                      }
-                    />
-                    <Input
-                      placeholder="Data de Aniversário"
-                      type="date"
-                      value={newStudent.birthday}
-                      onChange={(e) =>
-                        setNewStudent({ ...newStudent, birthday: e.target.value })
-                      }
-                    />
+                <div className="space-y-4 mb-4">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-lg font-medium">Adicionar Novo Aluno</h3>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setShowAddForm(false)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
                   </div>
-                  <Button onClick={handleAddStudent}>Adicionar Aluno</Button>
+                  <div className="flex gap-4 items-end">
+                    <div className="grid grid-cols-4 gap-4 flex-1">
+                      <Input
+                        placeholder="Nome"
+                        value={newStudent.name}
+                        onChange={(e) =>
+                          setNewStudent({ ...newStudent, name: e.target.value })
+                        }
+                      />
+                      <Input
+                        placeholder="Telefone"
+                        value={newStudent.phone}
+                        onChange={(e) =>
+                          setNewStudent({ ...newStudent, phone: e.target.value })
+                        }
+                      />
+                      <Input
+                        placeholder="E-mail"
+                        type="email"
+                        value={newStudent.email}
+                        onChange={(e) =>
+                          setNewStudent({ ...newStudent, email: e.target.value })
+                        }
+                      />
+                      <Input
+                        placeholder="Data de Aniversário"
+                        type="date"
+                        value={newStudent.birthday}
+                        onChange={(e) =>
+                          setNewStudent({
+                            ...newStudent,
+                            birthday: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                    <Button onClick={handleAddStudent}>Adicionar Aluno</Button>
+                  </div>
                 </div>
               )}
             </div>
