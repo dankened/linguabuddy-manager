@@ -187,10 +187,10 @@ const ClassDetailsDialog = ({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Nome</TableHead>
-                <TableHead>Telefone</TableHead>
-                <TableHead>E-mail</TableHead>
-                <TableHead>Data de Aniversário</TableHead>
+                <TableHead className="w-[25%]">Nome</TableHead>
+                <TableHead className="w-[25%]">Telefone</TableHead>
+                <TableHead className="w-[25%]">E-mail</TableHead>
+                <TableHead className="w-[25%]">Data de Aniversário</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -198,7 +198,7 @@ const ClassDetailsDialog = ({
                 <ContextMenu key={student.id}>
                   <ContextMenuTrigger>
                     <TableRow>
-                      <TableCell>
+                      <TableCell className="font-medium">
                         {editingStudent?.id === student.id ? (
                           <Input
                             value={editingStudent.name}
@@ -292,3 +292,4 @@ const ClassDetailsDialog = ({
 };
 
 export default ClassDetailsDialog;
+
