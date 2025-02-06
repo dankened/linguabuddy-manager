@@ -1,10 +1,10 @@
-
 import { Card } from "@/components/ui/card";
 import { Layout } from "@/components/Layout";
 import { Users, BookOpen, Calendar } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import ClassDetailsDialog from "@/components/ClassDetailsDialog";
+import ActiveStudentsDialog from "@/components/ActiveStudentsDialog";
 
 // Mock data for the class that will be shown in the dialog
 const mockClassData = {
@@ -33,12 +33,41 @@ const mockClassData = {
   active: true,
 };
 
+// Mock data for active students
+const mockActiveStudents = [
+  {
+    id: 1,
+    name: "João Silva",
+    phone: "(11) 99999-9999",
+    email: "joao@email.com",
+    birthday: "1990-01-01",
+    class: "Inglês Avançado",
+  },
+  {
+    id: 2,
+    name: "Maria Santos",
+    phone: "(11) 88888-8888",
+    email: "maria@email.com",
+    birthday: "1992-05-15",
+    class: "Espanhol Iniciante",
+  },
+  {
+    id: 3,
+    name: "Pedro Oliveira",
+    phone: "(11) 77777-7777",
+    email: "pedro@email.com",
+    birthday: "1988-12-20",
+    class: "Francês Intermediário",
+  },
+];
+
 const stats = [
   {
     title: "Alunos Ativos",
     value: "32",
     icon: Users,
     color: "bg-primary",
+    onClick: () => {},
   },
   {
     title: "Turmas",
@@ -60,6 +89,7 @@ const Index = () => {
     null
   );
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [activeStudentsDialogOpen, setActiveStudentsDialogOpen] = useState(false);
 
   return (
     <Layout>
@@ -87,7 +117,14 @@ const Index = () => {
                   </div>
                 </Link>
               ) : (
-                <div className="flex items-start justify-between">
+                <div
+                  className="flex items-start justify-between cursor-pointer"
+                  onClick={() => {
+                    if (stat.title === "Alunos Ativos") {
+                      setActiveStudentsDialogOpen(true);
+                    }
+                  }}
+                >
                   <div>
                     <p className="text-sm text-gray-600">{stat.title}</p>
                     <p className="text-3xl font-bold mt-2">{stat.value}</p>
@@ -184,6 +221,12 @@ const Index = () => {
           classData={selectedClass}
         />
       )}
+
+      <ActiveStudentsDialog
+        open={activeStudentsDialogOpen}
+        onOpenChange={setActiveStudentsDialogOpen}
+        students={mockActiveStudents}
+      />
     </Layout>
   );
 };
