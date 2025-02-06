@@ -6,12 +6,17 @@ import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Filter, Plus, Sear
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { CreateEventDialog } from "@/components/CreateEventDialog";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const Calendar = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showCreateEvent, setShowCreateEvent] = useState(false);
   const [viewType, setViewType] = useState<"week" | "month">("week");
+  const [date, setDate] = useState<Date>(new Date());
 
   return (
     <Layout>
@@ -73,18 +78,50 @@ const Calendar = () => {
 
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon">
+            <Button 
+              variant="outline" 
+              size="icon"
+              onClick={() => {
+                const newDate = new Date(date);
+                newDate.setMonth(date.getMonth() - 1);
+                setDate(newDate);
+              }}
+            >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <Button variant="outline" size="icon">
+            <Button 
+              variant="outline" 
+              size="icon"
+              onClick={() => {
+                const newDate = new Date(date);
+                newDate.setMonth(date.getMonth() + 1);
+                setDate(newDate);
+              }}
+            >
               <ChevronRight className="h-4 w-4" />
             </Button>
-            <CalendarIcon className="h-5 w-5 text-muted-foreground" />
-            <h2 className="text-lg font-semibold">Março 2024</h2>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="flex items-center gap-2">
+                  <CalendarIcon className="h-5 w-5 text-muted-foreground" />
+                  <span className="font-semibold">
+                    {format(date, "MMMM yyyy", { locale: ptBR })}
+                  </span>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={(date) => date && setDate(date)}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
 
-        <CalendarView viewType={viewType} />
+        <CalendarView viewType={viewType} currentDate={date} />
 
         <CreateEventDialog
           open={showCreateEvent}
