@@ -1,8 +1,9 @@
 
 import { useMemo } from "react";
-import { format, startOfWeek, addDays } from "date-fns";
+import { format, startOfWeek, addDays, startOfMonth, endOfMonth, isSameMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ScrollArea } from "./ui/scroll-area";
+import { cn } from "@/lib/utils";
 
 interface CalendarViewProps {
   viewType: "week" | "month";
@@ -24,6 +25,59 @@ export function CalendarView({ viewType }: CalendarViewProps) {
   const hours = Array.from({ length: 24 }).map((_, i) => {
     return `${String(i).padStart(2, "0")}:00`;
   });
+
+  const monthDays = useMemo(() => {
+    const date = new Date(2024, 2); // March 2024
+    const start = startOfMonth(date);
+    const end = endOfMonth(date);
+    const firstWeek = startOfWeek(start, { weekStartsOn: 0 });
+    const days = [];
+
+    let currentDate = firstWeek;
+
+    while (currentDate <= end || days.length % 7 !== 0) {
+      days.push({
+        date: currentDate,
+        isCurrentMonth: isSameMonth(currentDate, date),
+        dayNumber: format(currentDate, "d"),
+      });
+      currentDate = addDays(currentDate, 1);
+    }
+
+    return days;
+  }, []);
+
+  if (viewType === "month") {
+    return (
+      <div className="border rounded-lg">
+        <div className="grid grid-cols-7 border-b">
+          {weekDays.map((day) => (
+            <div
+              key={day.short}
+              className="p-2 text-sm font-medium text-center bg-muted"
+            >
+              <div className="capitalize">{day.short}</div>
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-7 auto-rows-fr">
+          {monthDays.map((day, index) => (
+            <div
+              key={index}
+              className={cn(
+                "border-r border-b p-2 h-24",
+                !day.isCurrentMonth && "bg-muted/50"
+              )}
+            >
+              <span className="text-sm block text-center">
+                {day.dayNumber}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="border rounded-lg">
