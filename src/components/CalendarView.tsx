@@ -1,4 +1,3 @@
-
 import { useMemo, useState } from "react";
 import { format, startOfWeek, addDays, startOfMonth, endOfMonth, isSameMonth, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -8,6 +7,7 @@ import ClassDetailsDialog from "./ClassDetailsDialog";
 
 interface CalendarViewProps {
   viewType: "week" | "month";
+  currentDate: Date;
 }
 
 // Dados de exemplo das turmas (em um caso real, viriam de uma API/banco de dados)
@@ -59,11 +59,11 @@ const classesSampleData = [
   },
 ];
 
-export function CalendarView({ viewType }: CalendarViewProps) {
+export function CalendarView({ viewType, currentDate }: CalendarViewProps) {
   const [selectedClass, setSelectedClass] = useState<typeof classesSampleData[0] | null>(null);
 
   const weekDays = useMemo(() => {
-    const start = startOfWeek(new Date(), { weekStartsOn: 0 });
+    const start = startOfWeek(currentDate, { weekStartsOn: 0 });
     return Array.from({ length: 7 }).map((_, i) => {
       const date = addDays(start, i);
       return {
@@ -72,32 +72,31 @@ export function CalendarView({ viewType }: CalendarViewProps) {
         date: format(date, "dd/MM"),
       };
     });
-  }, []);
+  }, [currentDate]);
 
   const hours = Array.from({ length: 24 }).map((_, i) => {
     return `${String(i).padStart(2, "0")}:00`;
   });
 
   const monthDays = useMemo(() => {
-    const date = new Date(2024, 2); // March 2024
-    const start = startOfMonth(date);
-    const end = endOfMonth(date);
+    const start = startOfMonth(currentDate);
+    const end = endOfMonth(currentDate);
     const firstWeek = startOfWeek(start, { weekStartsOn: 0 });
     const days = [];
 
-    let currentDate = firstWeek;
+    let currentDay = firstWeek;
 
-    while (currentDate <= end || days.length % 7 !== 0) {
+    while (currentDay <= end || days.length % 7 !== 0) {
       days.push({
-        date: currentDate,
-        isCurrentMonth: isSameMonth(currentDate, date),
-        dayNumber: format(currentDate, "d"),
+        date: currentDay,
+        isCurrentMonth: isSameMonth(currentDay, currentDate),
+        dayNumber: format(currentDay, "d"),
       });
-      currentDate = addDays(currentDate, 1);
+      currentDay = addDays(currentDay, 1);
     }
 
     return days;
-  }, []);
+  }, [currentDate]);
 
   const dayHasClass = (date: Date, classItem: typeof classesSampleData[0]) => {
     const dayName = format(date, "EEEE", { locale: ptBR });
@@ -195,6 +194,7 @@ export function CalendarView({ viewType }: CalendarViewProps) {
                 const dayIndex = Math.floor(i / 24);
                 const hourIndex = i % 24;
                 const currentHour = `${String(hourIndex).padStart(2, "0")}:00`;
+                const currentDayDate = addDays(startOfWeek(currentDate, { weekStartsOn: 0 }), dayIndex);
                 
                 return (
                   <div
@@ -204,7 +204,7 @@ export function CalendarView({ viewType }: CalendarViewProps) {
                     {classesSampleData.map((classItem) => {
                       if (
                         classItem.time === currentHour &&
-                        dayHasClass(addDays(new Date(), dayIndex), classItem)
+                        dayHasClass(currentDayDate, classItem)
                       ) {
                         return (
                           <button
@@ -237,4 +237,3 @@ export function CalendarView({ viewType }: CalendarViewProps) {
     </>
   );
 }
-

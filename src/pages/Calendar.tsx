@@ -6,12 +6,29 @@ import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Filter, Plus, Sear
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { CreateEventDialog } from "@/components/CreateEventDialog";
+import { format, addMonths, subMonths } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 const Calendar = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showCreateEvent, setShowCreateEvent] = useState(false);
   const [viewType, setViewType] = useState<"week" | "month">("week");
+  const [currentDate, setCurrentDate] = useState(new Date(2025, 0, 1)); // Janeiro 2025
+
+  const handlePreviousMonth = () => {
+    setCurrentDate((prev) => subMonths(prev, 1));
+  };
+
+  const handleNextMonth = () => {
+    setCurrentDate((prev) => addMonths(prev, 1));
+  };
+
+  const maxDate = new Date(2039, 11, 31); // Dezembro 2039 (15 anos a partir de 2025)
+  const minDate = new Date(2025, 0, 1); // Janeiro 2025
+
+  const canGoBack = currentDate > minDate;
+  const canGoForward = currentDate < maxDate;
 
   return (
     <Layout>
@@ -73,18 +90,30 @@ const Calendar = () => {
 
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon">
+            <Button 
+              variant="outline" 
+              size="icon"
+              onClick={handlePreviousMonth}
+              disabled={!canGoBack}
+            >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <Button variant="outline" size="icon">
+            <Button 
+              variant="outline" 
+              size="icon"
+              onClick={handleNextMonth}
+              disabled={!canGoForward}
+            >
               <ChevronRight className="h-4 w-4" />
             </Button>
             <CalendarIcon className="h-5 w-5 text-muted-foreground" />
-            <h2 className="text-lg font-semibold">Março 2024</h2>
+            <h2 className="text-lg font-semibold">
+              {format(currentDate, "MMMM yyyy", { locale: ptBR })}
+            </h2>
           </div>
         </div>
 
-        <CalendarView viewType={viewType} />
+        <CalendarView viewType={viewType} currentDate={currentDate} />
 
         <CreateEventDialog
           open={showCreateEvent}
