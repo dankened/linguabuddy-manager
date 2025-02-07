@@ -44,11 +44,11 @@ export function CalendarView({ viewType }: CalendarViewProps) {
       
       <ScrollArea className="h-[600px]">
         <div className="grid grid-cols-[60px_1fr]">
-          <div className="grid grid-rows-[repeat(24,minmax(60px,1fr))]">
+          <div className="grid grid-rows-[repeat(24,minmax(60px,1fr))] bg-muted">
             {hours.map((hour) => (
               <div
                 key={hour}
-                className="p-2 text-xs text-right pr-4 text-muted-foreground border-r relative"
+                className="p-2 text-sm font-medium text-center border-r relative flex items-center justify-end pr-3"
               >
                 {hour}
               </div>
