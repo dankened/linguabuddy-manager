@@ -6,22 +6,33 @@ import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Filter, Plus, Sear
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { CreateEventDialog } from "@/components/CreateEventDialog";
-import { format, addMonths, subMonths } from "date-fns";
+import { format, addMonths, subMonths, addWeeks, subWeeks } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
 
-const Calendar = () => {
+const CalendarPage = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showCreateEvent, setShowCreateEvent] = useState(false);
   const [viewType, setViewType] = useState<"week" | "month">("week");
   const [currentDate, setCurrentDate] = useState(new Date(2025, 0, 1)); // Janeiro 2025
 
-  const handlePreviousMonth = () => {
-    setCurrentDate((prev) => subMonths(prev, 1));
+  const handlePrevious = () => {
+    if (viewType === "month") {
+      setCurrentDate((prev) => subMonths(prev, 1));
+    } else {
+      setCurrentDate((prev) => subWeeks(prev, 1));
+    }
   };
 
-  const handleNextMonth = () => {
-    setCurrentDate((prev) => addMonths(prev, 1));
+  const handleNext = () => {
+    if (viewType === "month") {
+      setCurrentDate((prev) => addMonths(prev, 1));
+    } else {
+      setCurrentDate((prev) => addWeeks(prev, 1));
+    }
   };
 
   const maxDate = new Date(2039, 11, 31); // Dezembro 2039 (15 anos a partir de 2025)
@@ -93,7 +104,7 @@ const Calendar = () => {
             <Button 
               variant="outline" 
               size="icon"
-              onClick={handlePreviousMonth}
+              onClick={handlePrevious}
               disabled={!canGoBack}
             >
               <ChevronLeft className="h-4 w-4" />
@@ -101,15 +112,37 @@ const Calendar = () => {
             <Button 
               variant="outline" 
               size="icon"
-              onClick={handleNextMonth}
+              onClick={handleNext}
               disabled={!canGoForward}
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
-            <CalendarIcon className="h-5 w-5 text-muted-foreground" />
-            <h2 className="text-lg font-semibold">
-              {format(currentDate, "MMMM yyyy", { locale: ptBR })}
-            </h2>
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "justify-start text-left font-normal",
+                    !currentDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {format(currentDate, "MMMM yyyy", { locale: ptBR })}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={currentDate}
+                  onSelect={(date) => date && setCurrentDate(date)}
+                  disabled={(date) =>
+                    date > maxDate || date < minDate
+                  }
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
 
@@ -124,4 +157,4 @@ const Calendar = () => {
   );
 };
 
-export default Calendar;
+export default CalendarPage;
