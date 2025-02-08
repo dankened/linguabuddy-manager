@@ -1,3 +1,4 @@
+
 import { useMemo, useState } from "react";
 import { format, startOfWeek, addDays, startOfMonth, endOfMonth, isSameMonth, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -15,10 +16,10 @@ const classesSampleData = [
   {
     id: 1,
     language: "Inglês",
-    level: "Avançado",
-    type: "Regular",
+    level: "Intermediário",
+    type: "Turma",
     days: ["Segunda", "Quarta"],
-    time: "10:00",
+    time: "19:00",
     students: [
       {
         id: 1,
@@ -42,13 +43,13 @@ const classesSampleData = [
     id: 2,
     language: "Espanhol",
     level: "Iniciante",
-    type: "Intensivo",
+    type: "Particular",
     days: ["Terça", "Quinta"],
-    time: "14:00",
+    time: "10:00",
     students: [
       {
         id: 3,
-        name: "Pedro Alves",
+        name: "Pedro Souza",
         phone: "(11) 77777-7777",
         email: "pedro@email.com",
         birthday: "1988-12-20",
@@ -237,3 +238,4 @@ export function CalendarView({ viewType, currentDate }: CalendarViewProps) {
     </>
   );
 }
+
