@@ -1,73 +1,61 @@
-import {
-  BookOpen,
-  Calendar,
-  GraduationCap,
-  Home,
-  Users,
-} from "lucide-react";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from "@/components/ui/sidebar";
-import { useNavigate } from "react-router-dom";
 
-const teacherItems = [
-  {
-    title: "Dashboard",
-    path: "/",
-    icon: Home,
-  },
-  {
-    title: "Turmas",
-    path: "/classes",
-    icon: Users,
-  },
-  {
-    title: "Calendário",
-    path: "/calendar",
-    icon: Calendar,
-  },
-  {
-    title: "Material",
-    path: "/materials",
-    icon: BookOpen,
-  },
-];
+import { Link, useLocation } from "react-router-dom";
+import { cn } from "@/lib/utils";
+import { CalendarIcon, GraduationCap, Home, Book } from "lucide-react";
+import { Sidebar } from "./ui/sidebar";
 
-export function AppSidebar() {
-  const navigate = useNavigate();
+export const AppSidebar = () => {
+  const { pathname } = useLocation();
 
   return (
-    <Sidebar>
-      <SidebarContent>
-        <div className="p-4">
-          <div className="flex items-center gap-2 mb-8">
-            <GraduationCap className="w-8 h-8 text-primary" />
-            <span className="text-xl font-bold">LinguaClass</span>
-          </div>
+    <Sidebar className="fixed bg-card">
+      <div className="px-3 py-2">
+        <h2 className="mb-2 px-4 text-xl font-semibold tracking-tight">
+          CursoPlanner
+        </h2>
+        <div className="space-y-1">
+          <Link
+            to="/"
+            className={cn(
+              "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:text-primary",
+              pathname === "/" ? "bg-secondary text-primary" : "text-muted-foreground"
+            )}
+          >
+            <Home className="h-4 w-4" />
+            Dashboard
+          </Link>
+          <Link
+            to="/classes"
+            className={cn(
+              "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:text-primary",
+              pathname === "/classes" ? "bg-secondary text-primary" : "text-muted-foreground"
+            )}
+          >
+            <GraduationCap className="h-4 w-4" />
+            Turmas
+          </Link>
+          <Link
+            to="/calendar"
+            className={cn(
+              "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:text-primary",
+              pathname === "/calendar" ? "bg-secondary text-primary" : "text-muted-foreground"
+            )}
+          >
+            <CalendarIcon className="h-4 w-4" />
+            Calendário
+          </Link>
+          <Link
+            to="/materials"
+            className={cn(
+              "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:text-primary",
+              pathname === "/materials" ? "bg-secondary text-primary" : "text-muted-foreground"
+            )}
+          >
+            <Book className="h-4 w-4" />
+            Materiais
+          </Link>
         </div>
-        <SidebarGroup>
-          <SidebarGroupLabel>Menu</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {teacherItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton onClick={() => navigate(item.path)}>
-                    <item.icon className="w-5 h-5" />
-                    <span>{item.title}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
+      </div>
     </Sidebar>
   );
-}
+};

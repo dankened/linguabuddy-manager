@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Classes from "./pages/Classes";
 import Calendar from "./pages/Calendar";
+import Materials from "./pages/Materials";
 
 const queryClient = new QueryClient();
 
@@ -21,6 +22,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/classes" element={<Classes />} />
           <Route path="/calendar" element={<Calendar />} />
+          <Route path="/materials" element={<Materials />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
