@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Layout } from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,10 +10,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Video, FileText, ChevronDown, Book, Headphones, FolderPlus, CheckCircle, Upload, Edit, Eye } from "lucide-react";
+import { Plus, Video, FileText, ChevronDown, Book, Headphones, FolderPlus, CheckCircle, Upload, Edit, Eye, Settings } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { useToast } from "@/components/ui/use-toast";
+import { Switch } from "@/components/ui/switch";
 
 const Materials = () => {
   const { toast } = useToast();
@@ -22,6 +22,8 @@ const Materials = () => {
   const [showModuleForm, setShowModuleForm] = useState(false);
   const [showMaterialForm, setShowMaterialForm] = useState(false);
   const [showAssessmentForm, setShowAssessmentForm] = useState(false);
+  const [editingModule, setEditingModule] = useState<any>(null);
+  const [editingLesson, setEditingLesson] = useState<any>(null);
 
   // Dados de exemplo das turmas
   const classesSampleData = [
@@ -120,22 +122,24 @@ const Materials = () => {
       description: "O módulo foi criado com sucesso.",
     });
     setShowModuleForm(false);
+    setEditingModule(null);
   };
 
-  const handleCreateMaterial = () => {
-    toast({
-      title: "Material adicionado",
-      description: "O material complementar foi adicionado com sucesso.",
-    });
-    setShowMaterialForm(false);
+  const handleEditModule = (module: any) => {
+    setEditingModule(module);
+    setShowModuleForm(true);
   };
 
-  const handleCreateAssessment = () => {
+  const handleEditLesson = (lesson: any, moduleId: number) => {
+    setEditingLesson({ ...lesson, moduleId });
+  };
+
+  const handleSaveLesson = () => {
     toast({
-      title: "Avaliação criada",
-      description: "A avaliação foi criada com sucesso.",
+      title: "Aula atualizada",
+      description: "As alterações na aula foram salvas com sucesso.",
     });
-    setShowAssessmentForm(false);
+    setEditingLesson(null);
   };
 
   return (
@@ -159,11 +163,10 @@ const Materials = () => {
             </TabsTrigger>
           </TabsList>
 
-          {/* Seção de Vídeos */}
           <TabsContent value="videos" className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-semibold">Módulos de Aulas em Vídeo</h2>
-              <Button onClick={() => setShowModuleForm(true)}>
+              <Button onClick={() => { setEditingModule(null); setShowModuleForm(true); }}>
                 <Plus className="h-4 w-4 mr-2" />
                 Criar Módulo
               </Button>
@@ -172,19 +175,40 @@ const Materials = () => {
             {showModuleForm && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Novo Módulo</CardTitle>
+                  <CardTitle>{editingModule ? "Editar Módulo" : "Novo Módulo"}</CardTitle>
                   <CardDescription>
-                    Crie um novo módulo de aulas em vídeo
+                    {editingModule ? "Edite as informações do módulo" : "Crie um novo módulo de aulas em vídeo"}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="module-title">Título do Módulo</Label>
-                    <Input id="module-title" placeholder="Ex: Inglês Básico para Iniciantes" />
+                    <Input 
+                      id="module-title" 
+                      placeholder="Ex: Inglês Básico para Iniciantes"
+                      defaultValue={editingModule?.title} 
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="module-description">Descrição</Label>
-                    <Textarea id="module-description" placeholder="Descreva o conteúdo deste módulo" />
+                    <Textarea 
+                      id="module-description" 
+                      placeholder="Descreva o conteúdo deste módulo"
+                      defaultValue={editingModule?.description}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Status do Módulo</Label>
+                    <div className="flex items-center space-x-2">
+                      <Switch 
+                        id="module-status"
+                        defaultChecked={editingModule?.active !== false}
+                      />
+                      <Label htmlFor="module-status">Módulo Ativo</Label>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Quando inativo, os alunos não poderão acessar este módulo
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <Label>Turmas com Acesso</Label>
@@ -195,6 +219,7 @@ const Materials = () => {
                             type="checkbox"
                             id={`class-${classItem.id}`}
                             className="h-4 w-4 rounded border-gray-300"
+                            defaultChecked={editingModule?.classes?.includes(classItem.id)}
                           />
                           <Label htmlFor={`class-${classItem.id}`}>
                             {classItem.language} - {classItem.level}
@@ -205,10 +230,15 @@ const Materials = () => {
                   </div>
                 </CardContent>
                 <CardFooter className="flex justify-between">
-                  <Button variant="outline" onClick={() => setShowModuleForm(false)}>
+                  <Button variant="outline" onClick={() => {
+                    setShowModuleForm(false);
+                    setEditingModule(null);
+                  }}>
                     Cancelar
                   </Button>
-                  <Button onClick={handleCreateModule}>Criar Módulo</Button>
+                  <Button onClick={handleCreateModule}>
+                    {editingModule ? "Salvar Alterações" : "Criar Módulo"}
+                  </Button>
                 </CardFooter>
               </Card>
             )}
@@ -217,11 +247,23 @@ const Materials = () => {
               {modulesSampleData.map((module) => (
                 <Collapsible key={module.id} className="border rounded-lg">
                   <CollapsibleTrigger className="flex justify-between items-center w-full p-4 text-left">
-                    <div>
+                    <div className="flex-1">
                       <h3 className="text-lg font-medium">{module.title}</h3>
                       <p className="text-sm text-muted-foreground">{module.description}</p>
                     </div>
-                    <ChevronDown className="h-4 w-4" />
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditModule(module);
+                        }}
+                      >
+                        <Settings className="h-4 w-4" />
+                      </Button>
+                      <ChevronDown className="h-4 w-4" />
+                    </div>
                   </CollapsibleTrigger>
                   <CollapsibleContent className="p-4 pt-0 border-t">
                     <div className="space-y-4">
@@ -236,37 +278,53 @@ const Materials = () => {
                           </SheetTrigger>
                           <SheetContent>
                             <SheetHeader>
-                              <SheetTitle>Adicionar Nova Aula</SheetTitle>
+                              <SheetTitle>
+                                {editingLesson ? "Editar Aula" : "Adicionar Nova Aula"}
+                              </SheetTitle>
                               <SheetDescription>
-                                Adicione uma nova aula em vídeo a este módulo
+                                {editingLesson 
+                                  ? "Edite as informações da aula"
+                                  : "Adicione uma nova aula em vídeo a este módulo"}
                               </SheetDescription>
                             </SheetHeader>
                             <div className="space-y-4 py-4">
                               <div className="space-y-2">
                                 <Label htmlFor="lesson-title">Título da Aula</Label>
-                                <Input id="lesson-title" placeholder="Ex: Introdução aos Verbos" />
+                                <Input 
+                                  id="lesson-title" 
+                                  placeholder="Ex: Introdução aos Verbos"
+                                  defaultValue={editingLesson?.title}
+                                />
                               </div>
                               <div className="space-y-2">
                                 <Label htmlFor="lesson-description">Descrição</Label>
-                                <Textarea id="lesson-description" placeholder="Descreva o conteúdo desta aula" />
+                                <Textarea 
+                                  id="lesson-description" 
+                                  placeholder="Descreva o conteúdo desta aula"
+                                  defaultValue={editingLesson?.description}
+                                />
                               </div>
                               <div className="space-y-2">
                                 <Label htmlFor="lesson-video">Vídeo</Label>
                                 <div className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:bg-muted/50 transition-colors">
                                   <Upload className="h-8 w-8 mx-auto mb-2" />
                                   <p className="text-sm text-muted-foreground">
-                                    Clique para fazer upload ou arraste o arquivo para cá
+                                    {editingLesson 
+                                      ? "Clique para trocar o vídeo ou arraste um novo arquivo"
+                                      : "Clique para fazer upload ou arraste o arquivo para cá"}
                                   </p>
                                 </div>
                               </div>
                             </div>
                             <div className="flex justify-end space-x-4 mt-4">
-                              <Button variant="outline">Cancelar</Button>
-                              <Button onClick={() => toast({
-                                title: "Aula adicionada",
-                                description: "A aula foi adicionada com sucesso ao módulo."
-                              })}>
-                                Salvar Aula
+                              <Button 
+                                variant="outline" 
+                                onClick={() => setEditingLesson(null)}
+                              >
+                                Cancelar
+                              </Button>
+                              <Button onClick={handleSaveLesson}>
+                                {editingLesson ? "Salvar Alterações" : "Salvar Aula"}
                               </Button>
                             </div>
                           </SheetContent>
@@ -288,7 +346,11 @@ const Materials = () => {
                               <TableCell>{lesson.duration}</TableCell>
                               <TableCell className="text-right">
                                 <div className="flex justify-end gap-2">
-                                  <Button variant="ghost" size="icon">
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon"
+                                    onClick={() => handleEditLesson(lesson, module.id)}
+                                  >
                                     <Edit className="h-4 w-4" />
                                   </Button>
                                   <Button variant="ghost" size="icon">
@@ -321,7 +383,6 @@ const Materials = () => {
             </div>
           </TabsContent>
 
-          {/* Seção de Materiais Complementares */}
           <TabsContent value="materials" className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-semibold">Materiais Complementares</h2>
@@ -437,7 +498,6 @@ const Materials = () => {
             </div>
           </TabsContent>
 
-          {/* Seção de Avaliações */}
           <TabsContent value="assessments" className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-semibold">Avaliações</h2>
