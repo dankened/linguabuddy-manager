@@ -17,6 +17,7 @@ import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, Dr
 import { useToast } from "@/components/ui/use-toast";
 import { Switch } from "@/components/ui/switch";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
 const Materials = () => {
   const { toast } = useToast();
@@ -27,6 +28,7 @@ const Materials = () => {
   const [editingModule, setEditingModule] = useState<any>(null);
   const [editingLesson, setEditingLesson] = useState<any>(null);
   const [lessonSheetOpen, setLessonSheetOpen] = useState(false);
+  const [questionType, setQuestionType] = useState("multiple-choice");
 
   // Dados de exemplo das turmas
   const classesSampleData = [
@@ -161,6 +163,71 @@ const Materials = () => {
       description: "A avaliação foi criada com sucesso.",
     });
     setShowAssessmentForm(false);
+  };
+
+  // Componente de resposta baseado no tipo de questão
+  const renderQuestionResponseField = () => {
+    switch (questionType) {
+      case "multiple-choice":
+        return (
+          <div className="space-y-2">
+            <Label>Alternativas</Label>
+            <div className="space-y-2">
+              {["A", "B", "C", "D"].map((option) => (
+                <div key={option} className="flex items-start gap-2">
+                  <div className="flex h-6 items-center">
+                    <input
+                      type="radio"
+                      name="correct-answer"
+                      className="h-4 w-4"
+                    />
+                  </div>
+                  <Input placeholder={`Alternativa ${option}`} />
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      case "essay":
+        return (
+          <div className="space-y-2">
+            <Label>Resposta Discursiva</Label>
+            <div className="bg-muted/50 border rounded-lg p-4">
+              <p className="text-sm text-muted-foreground mb-2">
+                Os alunos terão um campo de texto para escrever sua resposta (até 500 palavras).
+              </p>
+              <div className="border border-dashed rounded-lg p-6 bg-background">
+                <p className="text-center text-sm text-muted-foreground italic">
+                  Espaço para resposta do aluno
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+      case "fill-blanks":
+        return (
+          <div className="space-y-2">
+            <Label>Frases para Completar</Label>
+            <p className="text-sm text-muted-foreground mb-2">
+              Adicione frases com espaços a serem preenchidos usando [blank] onde o aluno deverá completar.
+            </p>
+            <div className="space-y-2">
+              {[1, 2, 3].map((index) => (
+                <div key={index} className="space-y-1">
+                  <Input placeholder={`Exemplo: The capital of France is [blank].`} />
+                  <Input placeholder="Resposta correta" className="w-1/2 ml-auto" />
+                </div>
+              ))}
+              <Button variant="outline" size="sm" className="mt-2">
+                <Plus className="h-3 w-3 mr-1" />
+                Adicionar Frase
+              </Button>
+            </div>
+          </div>
+        );
+      default:
+        return null;
+    }
   };
 
   return (
@@ -581,7 +648,11 @@ const Materials = () => {
                         </div>
                         <div className="space-y-2">
                           <Label>Tipo de Questão</Label>
-                          <RadioGroup defaultValue="multiple-choice">
+                          <RadioGroup 
+                            value={questionType} 
+                            onValueChange={setQuestionType} 
+                            defaultValue="multiple-choice"
+                          >
                             <div className="flex items-center space-x-2">
                               <RadioGroupItem value="multiple-choice" id="multiple-choice" />
                               <Label htmlFor="multiple-choice">Múltipla Escolha</Label>
@@ -597,23 +668,7 @@ const Materials = () => {
                           </RadioGroup>
                         </div>
 
-                        <div className="space-y-2">
-                          <Label>Alternativas</Label>
-                          <div className="space-y-2">
-                            {["A", "B", "C", "D"].map((option) => (
-                              <div key={option} className="flex items-start gap-2">
-                                <div className="flex h-6 items-center">
-                                  <input
-                                    type="radio"
-                                    name="correct-answer"
-                                    className="h-4 w-4"
-                                  />
-                                </div>
-                                <Input placeholder={`Alternativa ${option}`} />
-                              </div>
-                            ))}
-                          </div>
-                        </div>
+                        {renderQuestionResponseField()}
                       </CardContent>
                     </Card>
                   </div>
