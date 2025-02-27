@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Layout } from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,6 +16,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { useToast } from "@/components/ui/use-toast";
 import { Switch } from "@/components/ui/switch";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 
 const Materials = () => {
   const { toast } = useToast();
@@ -24,6 +26,7 @@ const Materials = () => {
   const [showAssessmentForm, setShowAssessmentForm] = useState(false);
   const [editingModule, setEditingModule] = useState<any>(null);
   const [editingLesson, setEditingLesson] = useState<any>(null);
+  const [lessonSheetOpen, setLessonSheetOpen] = useState(false);
 
   // Dados de exemplo das turmas
   const classesSampleData = [
@@ -52,8 +55,8 @@ const Materials = () => {
       title: "Inglês Básico para Iniciantes",
       description: "Aulas introdutórias para alunos sem conhecimento prévio",
       lessons: [
-        { id: 1, title: "Apresentações", duration: "15:30" },
-        { id: 2, title: "Verbos no Presente", duration: "20:45" },
+        { id: 1, title: "Apresentações", duration: "15:30", description: "Como se apresentar em inglês" },
+        { id: 2, title: "Verbos no Presente", duration: "20:45", description: "Conjugação de verbos no presente" },
       ],
       classes: [1],
     },
@@ -62,8 +65,8 @@ const Materials = () => {
       title: "Espanhol - Conversação",
       description: "Módulo focado em prática de conversação",
       lessons: [
-        { id: 3, title: "Situações do Cotidiano", duration: "18:20" },
-        { id: 4, title: "Viagens", duration: "22:10" },
+        { id: 3, title: "Situações do Cotidiano", duration: "18:20", description: "Conversas do dia a dia" },
+        { id: 4, title: "Viagens", duration: "22:10", description: "Como se comunicar em viagens" },
       ],
       classes: [2],
     },
@@ -132,6 +135,7 @@ const Materials = () => {
 
   const handleEditLesson = (lesson: any, moduleId: number) => {
     setEditingLesson({ ...lesson, moduleId });
+    setLessonSheetOpen(true);
   };
 
   const handleSaveLesson = () => {
@@ -140,6 +144,23 @@ const Materials = () => {
       description: "As alterações na aula foram salvas com sucesso.",
     });
     setEditingLesson(null);
+    setLessonSheetOpen(false);
+  };
+
+  const handleCreateMaterial = () => {
+    toast({
+      title: "Material adicionado",
+      description: "O material complementar foi adicionado com sucesso.",
+    });
+    setShowMaterialForm(false);
+  };
+
+  const handleCreateAssessment = () => {
+    toast({
+      title: "Avaliação criada",
+      description: "A avaliação foi criada com sucesso.",
+    });
+    setShowAssessmentForm(false);
   };
 
   return (
@@ -278,53 +299,47 @@ const Materials = () => {
                           </SheetTrigger>
                           <SheetContent>
                             <SheetHeader>
-                              <SheetTitle>
-                                {editingLesson ? "Editar Aula" : "Adicionar Nova Aula"}
-                              </SheetTitle>
+                              <SheetTitle>Adicionar Nova Aula</SheetTitle>
                               <SheetDescription>
-                                {editingLesson 
-                                  ? "Edite as informações da aula"
-                                  : "Adicione uma nova aula em vídeo a este módulo"}
+                                Adicione uma nova aula em vídeo a este módulo
                               </SheetDescription>
                             </SheetHeader>
                             <div className="space-y-4 py-4">
                               <div className="space-y-2">
-                                <Label htmlFor="lesson-title">Título da Aula</Label>
+                                <Label htmlFor="new-lesson-title">Título da Aula</Label>
                                 <Input 
-                                  id="lesson-title" 
+                                  id="new-lesson-title" 
                                   placeholder="Ex: Introdução aos Verbos"
-                                  defaultValue={editingLesson?.title}
                                 />
                               </div>
                               <div className="space-y-2">
-                                <Label htmlFor="lesson-description">Descrição</Label>
+                                <Label htmlFor="new-lesson-description">Descrição</Label>
                                 <Textarea 
-                                  id="lesson-description" 
+                                  id="new-lesson-description" 
                                   placeholder="Descreva o conteúdo desta aula"
-                                  defaultValue={editingLesson?.description}
                                 />
                               </div>
                               <div className="space-y-2">
-                                <Label htmlFor="lesson-video">Vídeo</Label>
+                                <Label htmlFor="new-lesson-video">Vídeo</Label>
                                 <div className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:bg-muted/50 transition-colors">
                                   <Upload className="h-8 w-8 mx-auto mb-2" />
                                   <p className="text-sm text-muted-foreground">
-                                    {editingLesson 
-                                      ? "Clique para trocar o vídeo ou arraste um novo arquivo"
-                                      : "Clique para fazer upload ou arraste o arquivo para cá"}
+                                    Clique para fazer upload ou arraste o arquivo para cá
                                   </p>
                                 </div>
                               </div>
                             </div>
                             <div className="flex justify-end space-x-4 mt-4">
-                              <Button 
-                                variant="outline" 
-                                onClick={() => setEditingLesson(null)}
-                              >
+                              <Button variant="outline">
                                 Cancelar
                               </Button>
-                              <Button onClick={handleSaveLesson}>
-                                {editingLesson ? "Salvar Alterações" : "Salvar Aula"}
+                              <Button onClick={() => {
+                                toast({
+                                  title: "Aula adicionada",
+                                  description: "A nova aula foi adicionada com sucesso.",
+                                });
+                              }}>
+                                Salvar Aula
                               </Button>
                             </div>
                           </SheetContent>
@@ -732,6 +747,59 @@ const Materials = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Formulário de Edição de Aula (Sheet) */}
+      <Sheet open={lessonSheetOpen} onOpenChange={setLessonSheetOpen}>
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>Editar Aula</SheetTitle>
+            <SheetDescription>
+              Edite as informações da aula
+            </SheetDescription>
+          </SheetHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-lesson-title">Título da Aula</Label>
+              <Input 
+                id="edit-lesson-title" 
+                placeholder="Ex: Introdução aos Verbos"
+                defaultValue={editingLesson?.title}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-lesson-description">Descrição</Label>
+              <Textarea 
+                id="edit-lesson-description" 
+                placeholder="Descreva o conteúdo desta aula"
+                defaultValue={editingLesson?.description}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-lesson-video">Vídeo</Label>
+              <div className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:bg-muted/50 transition-colors">
+                <Upload className="h-8 w-8 mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground">
+                  Clique para trocar o vídeo ou arraste um novo arquivo
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="flex justify-end space-x-4 mt-4">
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setLessonSheetOpen(false);
+                setEditingLesson(null);
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button onClick={handleSaveLesson}>
+              Salvar Alterações
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
     </Layout>
   );
 };
