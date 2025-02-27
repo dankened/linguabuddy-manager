@@ -18,7 +18,7 @@ export const AppSidebar = () => {
             to="/"
             className={cn(
               "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:text-primary",
-              pathname === "/" ? "bg-secondary text-white" : "text-muted-foreground"
+              pathname === "/" ? "bg-secondary text-white" : "text-gray-700"
             )}
           >
             <Home className="h-4 w-4" />
@@ -28,7 +28,7 @@ export const AppSidebar = () => {
             to="/classes"
             className={cn(
               "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:text-primary",
-              pathname === "/classes" ? "bg-secondary text-white" : "text-muted-foreground"
+              pathname === "/classes" ? "bg-secondary text-white" : "text-gray-700"
             )}
           >
             <GraduationCap className="h-4 w-4" />
@@ -38,7 +38,7 @@ export const AppSidebar = () => {
             to="/calendar"
             className={cn(
               "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:text-primary",
-              pathname === "/calendar" ? "bg-secondary text-white" : "text-muted-foreground"
+              pathname === "/calendar" ? "bg-secondary text-white" : "text-gray-700"
             )}
           >
             <CalendarIcon className="h-4 w-4" />
@@ -48,7 +48,7 @@ export const AppSidebar = () => {
             to="/materials"
             className={cn(
               "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:text-primary",
-              pathname === "/materials" ? "bg-secondary text-white" : "text-muted-foreground"
+              pathname === "/materials" ? "bg-secondary text-white" : "text-gray-700"
             )}
           >
             <Book className="h-4 w-4" />
