@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Layout } from "@/components/Layout";
-import { Users, BookOpen, Calendar, BellDot } from "lucide-react";
+import { Users, BookOpen, Calendar, BellDot, DollarSign } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import ClassDetailsDialog from "@/components/ClassDetailsDialog";
@@ -81,6 +81,12 @@ const mockActiveStudents = [
   },
 ];
 
+// Calculate total monthly revenue from all active students
+const totalMonthlyRevenue = mockActiveStudents.reduce(
+  (sum, student) => sum + (student.monthlyFee || 0),
+  0
+);
+
 const stats = [
   {
     title: "Alunos Ativos",
@@ -101,6 +107,12 @@ const stats = [
     value: "12",
     icon: Calendar,
     color: "bg-primary-light",
+  },
+  {
+    title: "Receita Mensal",
+    value: `R$ ${totalMonthlyRevenue.toFixed(2)}`,
+    icon: DollarSign,
+    color: "bg-green-600",
   },
 ];
 
@@ -153,7 +165,7 @@ const Index = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {stats.map((stat) => (
             <Card key={stat.title} className="p-6">
               {stat.link ? (
