@@ -5,8 +5,8 @@ import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import ClassDetailsDialog from "@/components/ClassDetailsDialog";
 import ActiveStudentsDialog from "@/components/ActiveStudentsDialog";
+import RevenueDetailsDialog from "@/components/RevenueDetailsDialog";
 
-// Mock data for the class that will be shown in the dialog
 const mockClassData = {
   id: 1,
   language: "Inglês",
@@ -37,7 +37,6 @@ const mockClassData = {
   active: true,
 };
 
-// Mock data for active students
 const mockActiveStudents = [
   {
     id: 1,
@@ -81,7 +80,6 @@ const mockActiveStudents = [
   },
 ];
 
-// Calculate total monthly revenue from all active students
 const totalMonthlyRevenue = mockActiveStudents.reduce(
   (sum, student) => sum + (student.monthlyFee || 0),
   0
@@ -106,23 +104,22 @@ const stats = [
     title: "Aulas Esta Semana",
     value: "12",
     icon: Calendar,
-    color: "bg-primary-light",
+    color: "bg-rose-500",
+    link: "/calendar",
   },
   {
     title: "Receita Mensal",
     value: `R$ ${totalMonthlyRevenue.toFixed(2)}`,
     icon: DollarSign,
-    color: "bg-green-600",
+    color: "bg-green-400",
+    onClick: () => {},
   },
 ];
 
-// Function to get payment reminders for the current week
 const getWeeklyPaymentReminders = (students) => {
   const today = new Date();
   const todayDate = today.getDate();
-  
-  // Get the start and end of the current week (Sunday to Saturday)
-  const currentDay = today.getDay(); // 0 = Sunday, 6 = Saturday
+  const currentDay = today.getDay();
   const startOfWeek = new Date(today);
   startOfWeek.setDate(today.getDate() - currentDay);
   
@@ -132,7 +129,6 @@ const getWeeklyPaymentReminders = (students) => {
   const startDate = startOfWeek.getDate();
   const endDate = endOfWeek.getDate();
   
-  // Filter students whose payment days fall within this week
   return students.map(student => ({
     ...student,
     isToday: student.paymentDay === todayDate,
@@ -147,10 +143,10 @@ const Index = () => {
   );
   const [dialogOpen, setDialogOpen] = useState(false);
   const [activeStudentsDialogOpen, setActiveStudentsDialogOpen] = useState(false);
+  const [revenueDialogOpen, setRevenueDialogOpen] = useState(false);
   const [paymentReminders, setPaymentReminders] = useState([]);
   
   useEffect(() => {
-    // Get payment reminders for this week
     const reminders = getWeeklyPaymentReminders(mockActiveStudents);
     setPaymentReminders(reminders);
   }, []);
@@ -186,6 +182,8 @@ const Index = () => {
                   onClick={() => {
                     if (stat.title === "Alunos Ativos") {
                       setActiveStudentsDialogOpen(true);
+                    } else if (stat.title === "Receita Mensal") {
+                      setRevenueDialogOpen(true);
                     }
                   }}
                 >
@@ -246,7 +244,6 @@ const Index = () => {
           <Card className="p-6">
             <h2 className="text-xl font-semibold mb-4">Lembretes</h2>
             <div className="space-y-4">
-              {/* Payment reminders */}
               {paymentReminders.length > 0 && (
                 <div className="space-y-3">
                   <h3 className="text-sm font-medium text-muted-foreground flex items-center">
@@ -278,7 +275,6 @@ const Index = () => {
                 </div>
               )}
 
-              {/* Other reminders */}
               {[
                 {
                   titulo: "Feriado Próxima Semana",
@@ -323,6 +319,12 @@ const Index = () => {
         open={activeStudentsDialogOpen}
         onOpenChange={setActiveStudentsDialogOpen}
         students={mockActiveStudents}
+      />
+
+      <RevenueDetailsDialog
+        open={revenueDialogOpen}
+        onOpenChange={setRevenueDialogOpen}
+        totalRevenue={totalMonthlyRevenue}
       />
     </Layout>
   );
