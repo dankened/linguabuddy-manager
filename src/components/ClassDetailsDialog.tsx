@@ -5,6 +5,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   Table,
@@ -26,6 +27,8 @@ interface Student {
   phone: string;
   email: string;
   birthday: string;
+  monthlyFee?: number; // New field
+  paymentDay?: number; // New field
 }
 
 interface ClassDetailsDialogProps {
@@ -56,7 +59,15 @@ const ClassDetailsDialog = ({
     phone: "",
     email: "",
     birthday: "",
+    monthlyFee: 0,
+    paymentDay: 1,
   });
+
+  // Calculate the total monthly revenue for this class
+  const totalMonthlyRevenue = classData.students.reduce(
+    (sum, student) => sum + (student.monthlyFee || 0),
+    0
+  );
 
   const handleAddStudent = () => {
     // Em um caso real, isso seria uma chamada à API
@@ -70,6 +81,8 @@ const ClassDetailsDialog = ({
       phone: "",
       email: "",
       birthday: "",
+      monthlyFee: 0,
+      paymentDay: 1,
     });
   };
 
@@ -94,7 +107,18 @@ const ClassDetailsDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl">
         <DialogHeader>
-          <DialogTitle>Detalhes da Turma</DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle>Detalhes da Turma</DialogTitle>
+            <div className="flex items-center">
+              <span className="text-sm text-muted-foreground mr-2">Receita Mensal:</span>
+              <span className="font-medium text-primary">
+                R$ {totalMonthlyRevenue.toFixed(2)}
+              </span>
+            </div>
+          </div>
+          <DialogDescription>
+            Informações completas sobre a turma e seus alunos
+          </DialogDescription>
         </DialogHeader>
         <div className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
@@ -184,6 +208,30 @@ const ClassDetailsDialog = ({
                       }
                     />
                   </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Valor da Mensalidade (R$)</label>
+                    <Input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={newStudent.monthlyFee}
+                      onChange={(e) =>
+                        setNewStudent({ ...newStudent, monthlyFee: parseFloat(e.target.value) })
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Dia de Pagamento</label>
+                    <Input
+                      type="number"
+                      min="1"
+                      max="31"
+                      value={newStudent.paymentDay}
+                      onChange={(e) =>
+                        setNewStudent({ ...newStudent, paymentDay: parseInt(e.target.value) })
+                      }
+                    />
+                  </div>
                 </div>
                 <div className="flex justify-end">
                   <Button onClick={handleAddStudent}>Adicionar</Button>
@@ -194,10 +242,12 @@ const ClassDetailsDialog = ({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[25%]">Nome</TableHead>
-                  <TableHead className="w-[20%]">Telefone</TableHead>
-                  <TableHead className="w-[25%]">E-mail</TableHead>
-                  <TableHead className="w-[20%]">Data de Aniversário</TableHead>
+                  <TableHead className="w-[20%]">Nome</TableHead>
+                  <TableHead className="w-[15%]">Telefone</TableHead>
+                  <TableHead className="w-[20%]">E-mail</TableHead>
+                  <TableHead className="w-[15%]">Data de Aniversário</TableHead>
+                  <TableHead className="w-[15%]">Mensalidade</TableHead>
+                  <TableHead className="w-[5%]">Dia Pagto</TableHead>
                   <TableHead className="w-[10%]">Ações</TableHead>
                 </TableRow>
               </TableHeader>
@@ -264,6 +314,42 @@ const ClassDetailsDialog = ({
                         />
                       ) : (
                         format(new Date(student.birthday), "dd/MM/yyyy")
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {editingStudent?.id === student.id ? (
+                        <Input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={editingStudent.monthlyFee || 0}
+                          onChange={(e) =>
+                            setEditingStudent({
+                              ...editingStudent,
+                              monthlyFee: parseFloat(e.target.value),
+                            })
+                          }
+                        />
+                      ) : (
+                        `R$ ${(student.monthlyFee || 0).toFixed(2)}`
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {editingStudent?.id === student.id ? (
+                        <Input
+                          type="number"
+                          min="1"
+                          max="31"
+                          value={editingStudent.paymentDay || 1}
+                          onChange={(e) =>
+                            setEditingStudent({
+                              ...editingStudent,
+                              paymentDay: parseInt(e.target.value),
+                            })
+                          }
+                        />
+                      ) : (
+                        student.paymentDay || "-"
                       )}
                     </TableCell>
                     <TableCell>

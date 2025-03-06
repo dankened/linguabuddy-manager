@@ -1,8 +1,8 @@
 import { Card } from "@/components/ui/card";
 import { Layout } from "@/components/Layout";
-import { Users, BookOpen, Calendar } from "lucide-react";
+import { Users, BookOpen, Calendar, BellDot } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ClassDetailsDialog from "@/components/ClassDetailsDialog";
 import ActiveStudentsDialog from "@/components/ActiveStudentsDialog";
 
@@ -21,6 +21,8 @@ const mockClassData = {
       phone: "(11) 99999-9999",
       email: "joao@email.com",
       birthday: "1990-01-01",
+      monthlyFee: 250.00,
+      paymentDay: 5,
     },
     {
       id: 2,
@@ -28,6 +30,8 @@ const mockClassData = {
       phone: "(11) 88888-8888",
       email: "maria@email.com",
       birthday: "1992-05-15",
+      monthlyFee: 300.00,
+      paymentDay: 10,
     },
   ],
   active: true,
@@ -42,6 +46,8 @@ const mockActiveStudents = [
     email: "joao@email.com",
     birthday: "1990-01-01",
     class: "Inglês Avançado",
+    monthlyFee: 250.00,
+    paymentDay: 5,
   },
   {
     id: 2,
@@ -50,6 +56,8 @@ const mockActiveStudents = [
     email: "maria@email.com",
     birthday: "1992-05-15",
     class: "Espanhol Iniciante",
+    monthlyFee: 300.00,
+    paymentDay: 10,
   },
   {
     id: 3,
@@ -58,6 +66,18 @@ const mockActiveStudents = [
     email: "pedro@email.com",
     birthday: "1988-12-20",
     class: "Francês Intermediário",
+    monthlyFee: 280.00,
+    paymentDay: 15,
+  },
+  {
+    id: 4,
+    name: "Ana Costa",
+    phone: "(11) 66666-6666",
+    email: "ana@email.com",
+    birthday: "1995-08-25",
+    class: "Inglês Avançado",
+    monthlyFee: 250.00,
+    paymentDay: 20,
   },
 ];
 
@@ -84,12 +104,44 @@ const stats = [
   },
 ];
 
+// Function to get payment reminders for the current week
+const getWeeklyPaymentReminders = (students) => {
+  const today = new Date();
+  const todayDate = today.getDate();
+  
+  // Get the start and end of the current week (Sunday to Saturday)
+  const currentDay = today.getDay(); // 0 = Sunday, 6 = Saturday
+  const startOfWeek = new Date(today);
+  startOfWeek.setDate(today.getDate() - currentDay);
+  
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6);
+  
+  const startDate = startOfWeek.getDate();
+  const endDate = endOfWeek.getDate();
+  
+  // Filter students whose payment days fall within this week
+  return students.map(student => ({
+    ...student,
+    isToday: student.paymentDay === todayDate,
+    isThisWeek: (student.paymentDay >= startDate && student.paymentDay <= endDate) || 
+                (endDate < startDate && (student.paymentDay >= startDate || student.paymentDay <= endDate))
+  })).filter(student => student.isThisWeek);
+};
+
 const Index = () => {
   const [selectedClass, setSelectedClass] = useState<typeof mockClassData | null>(
     null
   );
   const [dialogOpen, setDialogOpen] = useState(false);
   const [activeStudentsDialogOpen, setActiveStudentsDialogOpen] = useState(false);
+  const [paymentReminders, setPaymentReminders] = useState([]);
+  
+  useEffect(() => {
+    // Get payment reminders for this week
+    const reminders = getWeeklyPaymentReminders(mockActiveStudents);
+    setPaymentReminders(reminders);
+  }, []);
 
   return (
     <Layout>
@@ -180,8 +232,41 @@ const Index = () => {
           </Card>
 
           <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-4">Avisos Importantes</h2>
+            <h2 className="text-xl font-semibold mb-4">Lembretes</h2>
             <div className="space-y-4">
+              {/* Payment reminders */}
+              {paymentReminders.length > 0 && (
+                <div className="space-y-3">
+                  <h3 className="text-sm font-medium text-muted-foreground flex items-center">
+                    <BellDot className="h-4 w-4 mr-1 text-primary" />
+                    Pagamentos da Semana
+                  </h3>
+                  {paymentReminders.map((student) => (
+                    <div
+                      key={student.id}
+                      className={`p-3 border rounded-lg ${
+                        student.isToday
+                          ? "border-primary bg-primary/10"
+                          : "border-gray-200"
+                      }`}
+                    >
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <p className="font-medium">{student.name}</p>
+                          <p className="text-sm text-gray-600">
+                            {student.class} - Dia {student.paymentDay}
+                          </p>
+                        </div>
+                        <div className="text-primary font-medium">
+                          R$ {student.monthlyFee.toFixed(2)}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Other reminders */}
               {[
                 {
                   titulo: "Feriado Próxima Semana",
