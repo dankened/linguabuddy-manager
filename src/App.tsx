@@ -13,38 +13,48 @@ import Materials from "./pages/Materials";
 import Auth from "./pages/Auth";
 import ProtectedRoute from "./components/ProtectedRoute";
 
-const queryClient = new QueryClient();
+// Create a new QueryClient instance
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60 * 1000,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            {/* Public routes */}
-            <Route path="/auth" element={<Auth />} />
-            
-            {/* Protected routes (require authentication) */}
-            <Route element={<ProtectedRoute />}>
-              <Route path="/" element={<Index />} />
-              <Route path="/calendar" element={<Calendar />} />
-              <Route path="/materials" element={<Materials />} />
-            </Route>
-            
-            {/* Teacher-only routes */}
-            <Route element={<ProtectedRoute requireTeacher={true} />}>
-              <Route path="/classes" element={<Classes />} />
-            </Route>
-            
-            {/* Fallback route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
-  </QueryClientProvider>
-);
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              {/* Public routes */}
+              <Route path="/auth" element={<Auth />} />
+              
+              {/* Protected routes (require authentication) */}
+              <Route element={<ProtectedRoute />}>
+                <Route path="/" element={<Index />} />
+                <Route path="/calendar" element={<Calendar />} />
+                <Route path="/materials" element={<Materials />} />
+              </Route>
+              
+              {/* Teacher-only routes */}
+              <Route element={<ProtectedRoute requireTeacher={true} />}>
+                <Route path="/classes" element={<Classes />} />
+              </Route>
+              
+              {/* Fallback route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  );
+}
 
 export default App;
