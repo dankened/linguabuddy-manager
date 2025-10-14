@@ -232,7 +232,7 @@ const Materials = () => {
 
   return (
     <Layout>
-      <div className="w-full max-w-6xl mx-auto">
+      <div className="space-y-6">
         <h1 className="text-3xl font-bold mb-6">Materiais</h1>
 
         <Tabs defaultValue="videos" value={activeTab} onValueChange={setActiveTab} className="w-full">

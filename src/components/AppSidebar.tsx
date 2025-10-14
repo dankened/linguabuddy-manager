@@ -3,9 +3,11 @@ import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { CalendarIcon, GraduationCap, Home, Book } from "lucide-react";
 import { Sidebar } from "./ui/sidebar";
+import { useAuth } from "@/contexts/AuthContext";
 
 export const AppSidebar = () => {
   const { pathname } = useLocation();
+  const { isTeacher } = useAuth();
 
   return (
     <Sidebar className="fixed bg-card">
@@ -25,10 +27,10 @@ export const AppSidebar = () => {
             Dashboard
           </Link>
           <Link
-            to="/classes"
+            to={isTeacher ? "/teacher/classes" : "/classes"}
             className={cn(
               "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:text-primary",
-              pathname === "/classes" ? "bg-secondary text-white" : "text-gray-700"
+              (pathname === "/classes" || pathname === "/teacher/classes") ? "bg-secondary text-white" : "text-gray-700"
             )}
           >
             <GraduationCap className="h-4 w-4" />

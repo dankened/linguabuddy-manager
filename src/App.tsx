@@ -8,6 +8,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Classes from "./pages/Classes";
+import StudentClasses from "./pages/StudentClasses";
 import Calendar from "./pages/Calendar";
 import Materials from "./pages/Materials";
 import Auth from "./pages/Auth";
@@ -40,11 +41,12 @@ function App() {
                 <Route path="/" element={<Index />} />
                 <Route path="/calendar" element={<Calendar />} />
                 <Route path="/materials" element={<Materials />} />
+                <Route path="/classes" element={<StudentClasses />} />
               </Route>
               
               {/* Teacher-only routes */}
               <Route element={<ProtectedRoute requireTeacher={true} />}>
-                <Route path="/classes" element={<Classes />} />
+                <Route path="/teacher/classes" element={<Classes />} />
               </Route>
               
               {/* Fallback route */}

@@ -13,7 +13,7 @@ const Classes = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto p-6 space-y-8">
+      <div className="space-y-8">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold text-gray-900">Turmas</h1>
           <div className="flex gap-4">
