@@ -48,9 +48,8 @@ const StudentClasses = () => {
   ];
 
   return (
-    <Layout>
-      <div className="space-y-8">
-        <div className="flex justify-between items-center">
+    <div className="space-y-8">
+      <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">Minhas Turmas</h1>
         </div>
 
@@ -183,8 +182,7 @@ const StudentClasses = () => {
             )}
           </DialogContent>
         </Dialog>
-      </div>
-    </Layout>
+    </div>
   );
 };
 

@@ -42,9 +42,8 @@ const CalendarPage = () => {
   const canGoForward = currentDate < maxDate;
 
   return (
-    <Layout>
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             {showSearch ? (
               <div className="flex items-center gap-2">
@@ -152,8 +151,7 @@ const CalendarPage = () => {
           open={showCreateEvent}
           onOpenChange={setShowCreateEvent}
         />
-      </div>
-    </Layout>
+    </div>
   );
 };
 

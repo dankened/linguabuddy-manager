@@ -12,9 +12,8 @@ const Classes = () => {
   const [showInactive, setShowInactive] = useState(false);
 
   return (
-    <Layout>
-      <div className="space-y-8">
-        <div className="flex justify-between items-center">
+    <div className="space-y-8">
+      <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold text-gray-900">Turmas</h1>
           <div className="flex gap-4">
             <Button
@@ -51,9 +50,8 @@ const Classes = () => {
           </div>
         </div>
 
-        <ActiveClasses showInactive={showInactive} />
-      </div>
-    </Layout>
+      <ActiveClasses showInactive={showInactive} />
+    </div>
   );
 };
 

@@ -2,9 +2,11 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { DashboardStats } from "@/components/DashboardStats";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useNavigate } from "react-router-dom";
 
 export default function Index() {
   const { user, isTeacher } = useAuth();
+  const navigate = useNavigate();
   
   return (
     <div className="flex-1 space-y-6">
@@ -26,15 +28,24 @@ export default function Index() {
             <CardDescription>Últimas atualizações na plataforma</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="border-b pb-2">
+            <div 
+              className="border-b pb-2 cursor-pointer hover:bg-muted/50 p-2 rounded transition-colors"
+              onClick={() => navigate("/materials")}
+            >
               <p className="font-medium">Material adicionado</p>
               <p className="text-sm text-muted-foreground">Lições de gramática - Inglês Intermediário</p>
             </div>
-            <div className="border-b pb-2">
+            <div 
+              className="border-b pb-2 cursor-pointer hover:bg-muted/50 p-2 rounded transition-colors"
+              onClick={() => navigate("/calendar")}
+            >
               <p className="font-medium">Nova aula agendada</p>
               <p className="text-sm text-muted-foreground">Conversação em Inglês - Quinta-feira 19:00</p>
             </div>
-            <div>
+            <div 
+              className="cursor-pointer hover:bg-muted/50 p-2 rounded transition-colors"
+              onClick={() => navigate("/materials")}
+            >
               <p className="font-medium">Avaliação disponível</p>
               <p className="text-sm text-muted-foreground">Prova mensal - Francês básico</p>
             </div>

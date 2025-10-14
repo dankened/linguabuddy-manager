@@ -231,9 +231,8 @@ const Materials = () => {
   };
 
   return (
-    <Layout>
-      <div className="space-y-6">
-        <h1 className="text-3xl font-bold mb-6">Materiais</h1>
+    <div className="space-y-6">
+      <h1 className="text-3xl font-bold mb-6">Materiais</h1>
 
         <Tabs defaultValue="videos" value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-3 mb-6">
@@ -801,10 +800,9 @@ const Materials = () => {
             </div>
           </TabsContent>
         </Tabs>
-      </div>
 
-      {/* Formulário de Edição de Aula (Sheet) */}
-      <Sheet open={lessonSheetOpen} onOpenChange={setLessonSheetOpen}>
+        {/* Formulário de Edição de Aula (Sheet) */}
+        <Sheet open={lessonSheetOpen} onOpenChange={setLessonSheetOpen}>
         <SheetContent>
           <SheetHeader>
             <SheetTitle>Editar Aula</SheetTitle>
@@ -854,8 +852,8 @@ const Materials = () => {
             </Button>
           </div>
         </SheetContent>
-      </Sheet>
-    </Layout>
+        </Sheet>
+      </div>
   );
 };
 
