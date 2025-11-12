@@ -1,7 +1,7 @@
 
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { CalendarIcon, GraduationCap, Home, Book, Sparkles } from "lucide-react";
+import { CalendarIcon, GraduationCap, Home, Book, Sparkles, Users } from "lucide-react";
 import { Sidebar } from "./ui/sidebar";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -36,6 +36,18 @@ export const AppSidebar = () => {
             <GraduationCap className="h-4 w-4" />
             Turmas
           </Link>
+          {isTeacher && (
+            <Link
+              to="/admin/students"
+              className={cn(
+                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:text-primary",
+                pathname === "/admin/students" ? "bg-secondary text-white" : "text-gray-700"
+              )}
+            >
+              <Users className="h-4 w-4" />
+              Estudantes
+            </Link>
+          )}
           <Link
             to="/calendar"
             className={cn(
