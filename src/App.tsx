@@ -14,6 +14,7 @@ import Materials from "./pages/Materials";
 import StudyArea from "./pages/StudyArea";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
+import AdminStudents from "./pages/AdminStudents";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 
@@ -52,6 +53,7 @@ function App() {
               {/* Teacher-only routes */}
               <Route element={<ProtectedRoute requireTeacher={true} />}>
                 <Route path="/teacher/classes" element={<Classes />} />
+                <Route path="/admin/students" element={<AdminStudents />} />
               </Route>
               
               {/* Fallback route */}

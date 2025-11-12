@@ -10,16 +10,18 @@ import { Textarea } from "@/components/ui/textarea";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Video, FileText, ChevronDown, Book, Headphones, FolderPlus, CheckCircle, Upload, Edit, Eye, Settings } from "lucide-react";
+import { Plus, Video, FileText, ChevronDown, Book, Headphones, FolderPlus, CheckCircle, Upload, Edit, Eye, Settings, Download, Play } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { useToast } from "@/components/ui/use-toast";
 import { Switch } from "@/components/ui/switch";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Materials = () => {
   const { toast } = useToast();
+  const { isTeacher } = useAuth();
   const [activeTab, setActiveTab] = useState("videos");
   const [showModuleForm, setShowModuleForm] = useState(false);
   const [showMaterialForm, setShowMaterialForm] = useState(false);
@@ -252,13 +254,15 @@ const Materials = () => {
           <TabsContent value="videos" className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-semibold">Módulos de Aulas em Vídeo</h2>
-              <Button onClick={() => { setEditingModule(null); setShowModuleForm(true); }}>
-                <Plus className="h-4 w-4 mr-2" />
-                Criar Módulo
-              </Button>
+              {isTeacher && (
+                <Button onClick={() => { setEditingModule(null); setShowModuleForm(true); }}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Criar Módulo
+                </Button>
+              )}
             </div>
 
-            {showModuleForm && (
+            {isTeacher && showModuleForm && (
               <Card>
                 <CardHeader>
                   <CardTitle>{editingModule ? "Editar Módulo" : "Novo Módulo"}</CardTitle>
@@ -338,16 +342,18 @@ const Materials = () => {
                       <p className="text-sm text-muted-foreground">{module.description}</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleEditModule(module);
-                        }}
-                      >
-                        <Settings className="h-4 w-4" />
-                      </Button>
+                      {isTeacher && (
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditModule(module);
+                          }}
+                        >
+                          <Settings className="h-4 w-4" />
+                        </Button>
+                      )}
                       <ChevronDown className="h-4 w-4" />
                     </div>
                   </CollapsibleTrigger>
@@ -355,13 +361,14 @@ const Materials = () => {
                     <div className="space-y-4">
                       <div className="flex justify-between items-center">
                         <h4 className="font-medium">Aulas</h4>
-                        <Sheet>
-                          <SheetTrigger asChild>
-                            <Button variant="outline" size="sm">
-                              <Plus className="h-4 w-4 mr-2" />
-                              Adicionar Aula
-                            </Button>
-                          </SheetTrigger>
+                        {isTeacher && (
+                          <Sheet>
+                            <SheetTrigger asChild>
+                              <Button variant="outline" size="sm">
+                                <Plus className="h-4 w-4 mr-2" />
+                                Adicionar Aula
+                              </Button>
+                            </SheetTrigger>
                           <SheetContent>
                             <SheetHeader>
                               <SheetTitle>Adicionar Nova Aula</SheetTitle>
@@ -409,6 +416,7 @@ const Materials = () => {
                             </div>
                           </SheetContent>
                         </Sheet>
+                        )}
                       </div>
 
                       <Table>
@@ -426,16 +434,25 @@ const Materials = () => {
                               <TableCell>{lesson.duration}</TableCell>
                               <TableCell className="text-right">
                                 <div className="flex justify-end gap-2">
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon"
-                                    onClick={() => handleEditLesson(lesson, module.id)}
-                                  >
-                                    <Edit className="h-4 w-4" />
-                                  </Button>
-                                  <Button variant="ghost" size="icon">
-                                    <Eye className="h-4 w-4" />
-                                  </Button>
+                                  {isTeacher ? (
+                                    <>
+                                      <Button 
+                                        variant="ghost" 
+                                        size="icon"
+                                        onClick={() => handleEditLesson(lesson, module.id)}
+                                      >
+                                        <Edit className="h-4 w-4" />
+                                      </Button>
+                                      <Button variant="ghost" size="icon">
+                                        <Eye className="h-4 w-4" />
+                                      </Button>
+                                    </>
+                                  ) : (
+                                    <Button variant="outline" size="sm">
+                                      <Play className="h-4 w-4 mr-2" />
+                                      Assistir
+                                    </Button>
+                                  )}
                                 </div>
                               </TableCell>
                             </TableRow>
@@ -466,13 +483,15 @@ const Materials = () => {
           <TabsContent value="materials" className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-semibold">Materiais Complementares</h2>
-              <Button onClick={() => setShowMaterialForm(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Adicionar Material
-              </Button>
+              {isTeacher && (
+                <Button onClick={() => setShowMaterialForm(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Adicionar Material
+                </Button>
+              )}
             </div>
 
-            {showMaterialForm && (
+            {isTeacher && showMaterialForm && (
               <Card>
                 <CardHeader>
                   <CardTitle>Novo Material Complementar</CardTitle>
@@ -567,10 +586,19 @@ const Materials = () => {
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm">Editar</Button>
-                      <Button variant="ghost" size="icon">
-                        <Eye className="h-4 w-4" />
-                      </Button>
+                      {isTeacher ? (
+                        <>
+                          <Button variant="outline" size="sm">Editar</Button>
+                          <Button variant="ghost" size="icon">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </>
+                      ) : (
+                        <Button variant="outline" size="sm">
+                          <Download className="h-4 w-4 mr-2" />
+                          Download
+                        </Button>
+                      )}
                     </div>
                   </CardFooter>
                 </Card>
@@ -581,13 +609,15 @@ const Materials = () => {
           <TabsContent value="assessments" className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-semibold">Avaliações</h2>
-              <Button onClick={() => setShowAssessmentForm(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Criar Avaliação
-              </Button>
+              {isTeacher && (
+                <Button onClick={() => setShowAssessmentForm(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Criar Avaliação
+                </Button>
+              )}
             </div>
 
-            {showAssessmentForm && (
+            {isTeacher && showAssessmentForm && (
               <Card>
                 <CardHeader>
                   <CardTitle>Nova Avaliação</CardTitle>
@@ -730,11 +760,13 @@ const Materials = () => {
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm">Editar</Button>
-                      <Drawer>
-                        <DrawerTrigger asChild>
-                          <Button size="sm">Ver Entregas</Button>
-                        </DrawerTrigger>
+                      {isTeacher ? (
+                        <>
+                          <Button variant="outline" size="sm">Editar</Button>
+                          <Drawer>
+                            <DrawerTrigger asChild>
+                              <Button size="sm">Ver Entregas</Button>
+                            </DrawerTrigger>
                         <DrawerContent>
                           <div className="mx-auto w-full max-w-4xl">
                             <DrawerHeader className="text-left">
@@ -792,6 +824,12 @@ const Materials = () => {
                           </div>
                         </DrawerContent>
                       </Drawer>
+                        </>
+                      ) : (
+                        <Button size="sm">
+                          {assessment.status === "Disponível" ? "Fazer Avaliação" : "Ver Resultado"}
+                        </Button>
+                      )}
                     </div>
                   </CardFooter>
                 </Card>
