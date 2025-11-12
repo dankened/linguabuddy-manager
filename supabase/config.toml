@@ -1,1 +1,4 @@
 project_id = "jdsjtwtgsmyaveigkfdc"
+
+[functions.study-area-chat]
+verify_jwt = true
