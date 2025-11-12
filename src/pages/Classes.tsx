@@ -6,7 +6,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import NewClassForm from "@/components/NewClassForm";
 import ActiveClasses from "@/components/ActiveClasses";
 import { useState } from "react";
-import { Layout } from "@/components/Layout";
 
 const Classes = () => {
   const [showInactive, setShowInactive] = useState(false);

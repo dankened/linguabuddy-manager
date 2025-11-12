@@ -1,5 +1,4 @@
 
-import { Layout } from "@/components/Layout";
 import { CalendarView } from "@/components/CalendarView";
 import { Button } from "@/components/ui/button";
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Filter, Plus, Search } from "lucide-react";

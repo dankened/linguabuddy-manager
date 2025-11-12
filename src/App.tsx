@@ -14,7 +14,7 @@ import Materials from "./pages/Materials";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { Layout } from "./components/Layout";
+
 
 // Create a new QueryClient instance
 const queryClient = new QueryClient({
@@ -40,16 +40,16 @@ function App() {
               
               {/* Protected routes (require authentication) */}
               <Route element={<ProtectedRoute />}>
-                <Route path="/" element={<Layout><Index /></Layout>} />
-                <Route path="/calendar" element={<Layout><Calendar /></Layout>} />
-                <Route path="/materials" element={<Layout><Materials /></Layout>} />
-                <Route path="/classes" element={<Layout><StudentClasses /></Layout>} />
-                <Route path="/profile" element={<Layout><Profile /></Layout>} />
+                <Route path="/" element={<Index />} />
+                <Route path="/calendar" element={<Calendar />} />
+                <Route path="/materials" element={<Materials />} />
+                <Route path="/classes" element={<StudentClasses />} />
+                <Route path="/profile" element={<Profile />} />
               </Route>
               
               {/* Teacher-only routes */}
               <Route element={<ProtectedRoute requireTeacher={true} />}>
-                <Route path="/teacher/classes" element={<Layout><Classes /></Layout>} />
+                <Route path="/teacher/classes" element={<Classes />} />
               </Route>
               
               {/* Fallback route */}
