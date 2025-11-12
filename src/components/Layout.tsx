@@ -8,7 +8,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <main className="flex-1 flex flex-col">
-          <header className="flex items-center justify-end p-4 border-b bg-card">
+          <header className="flex items-center justify-between p-4 border-b bg-card">
+            <SidebarTrigger />
             <UserMenu />
           </header>
           <div className="flex-1 p-8">
