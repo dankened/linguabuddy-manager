@@ -1,67 +1,24 @@
-
 import { useMemo, useState } from "react";
-import { format, startOfWeek, addDays, startOfMonth, endOfMonth, isSameMonth, isSameDay } from "date-fns";
+import { format, startOfWeek, addDays, startOfMonth, endOfMonth, isSameMonth, isSameDay, differenceInMinutes, addMinutes } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ScrollArea } from "./ui/scroll-area";
 import { cn } from "@/lib/utils";
-import ClassDetailsDialog from "./ClassDetailsDialog";
+import { Event } from "@/hooks/useEvents";
+import { EventCard } from "./EventCard";
+import { Skeleton } from "./ui/skeleton";
 
 interface CalendarViewProps {
   viewType: "day" | "week" | "month";
   currentDate: Date;
+  events: Event[];
+  isLoading: boolean;
+  onEventUpdate: (params: { eventId: string; start_time: string; end_time: string }) => void;
+  isUpdating: boolean;
 }
 
-// Dados de exemplo das turmas (em um caso real, viriam de uma API/banco de dados)
-const classesSampleData = [
-  {
-    id: 1,
-    language: "Inglês",
-    level: "Intermediário",
-    type: "Turma",
-    days: ["Segunda", "Quarta"],
-    time: "19:00",
-    students: [
-      {
-        id: 1,
-        name: "João Silva",
-        phone: "(11) 99999-9999",
-        email: "joao@email.com",
-        birthday: "1990-01-01",
-      },
-      {
-        id: 2,
-        name: "Maria Santos",
-        phone: "(11) 88888-8888",
-        email: "maria@email.com",
-        birthday: "1992-05-15",
-      },
-    ],
-    active: true,
-    color: "#D946EF",
-  },
-  {
-    id: 2,
-    language: "Espanhol",
-    level: "Iniciante",
-    type: "Particular",
-    days: ["Terça", "Quinta"],
-    time: "10:00",
-    students: [
-      {
-        id: 3,
-        name: "Pedro Souza",
-        phone: "(11) 77777-7777",
-        email: "pedro@email.com",
-        birthday: "1988-12-20",
-      },
-    ],
-    active: true,
-    color: "#8B5CF6",
-  },
-];
-
-export function CalendarView({ viewType, currentDate }: CalendarViewProps) {
-  const [selectedClass, setSelectedClass] = useState<typeof classesSampleData[0] | null>(null);
+export function CalendarView({ viewType, currentDate, events, isLoading, onEventUpdate, isUpdating }: CalendarViewProps) {
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [draggedEvent, setDraggedEvent] = useState<Event | null>(null);
 
   const weekDays = useMemo(() => {
     const start = startOfWeek(currentDate, { weekStartsOn: 0 });
@@ -99,10 +56,89 @@ export function CalendarView({ viewType, currentDate }: CalendarViewProps) {
     return days;
   }, [currentDate]);
 
-  const dayHasClass = (date: Date, classItem: typeof classesSampleData[0]) => {
-    const dayName = format(date, "EEEE", { locale: ptBR });
-    return classItem.days.includes(dayName);
+  const detectConflicts = (dayEvents: Event[]) => {
+    const conflicts: Map<string, { position: number; total: number }> = new Map();
+    
+    for (let i = 0; i < dayEvents.length; i++) {
+      const event1 = dayEvents[i];
+      const start1 = new Date(event1.start_time);
+      const end1 = new Date(event1.end_time);
+      
+      let conflictGroup = [event1];
+      
+      for (let j = i + 1; j < dayEvents.length; j++) {
+        const event2 = dayEvents[j];
+        const start2 = new Date(event2.start_time);
+        const end2 = new Date(event2.end_time);
+        
+        // Check if events overlap
+        if (start1 < end2 && start2 < end1) {
+          if (!conflictGroup.includes(event2)) {
+            conflictGroup.push(event2);
+          }
+        }
+      }
+      
+      if (conflictGroup.length > 1) {
+        conflictGroup.forEach((event, index) => {
+          conflicts.set(event.id, { position: index, total: conflictGroup.length });
+        });
+      }
+    }
+    
+    return conflicts;
   };
+
+  const getEventsForDay = (date: Date) => {
+    return events.filter((event) => {
+      const eventDate = new Date(event.start_time);
+      return isSameDay(eventDate, date);
+    });
+  };
+
+  const handleDragStart = (event: Event) => (e: React.DragEvent) => {
+    setDraggedEvent(event);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragEnd = () => {
+    setDraggedEvent(null);
+  };
+
+  const handleDrop = (targetDate: Date, targetHour: number) => (e: React.DragEvent) => {
+    e.preventDefault();
+    
+    if (!draggedEvent) return;
+
+    const originalStart = new Date(draggedEvent.start_time);
+    const originalEnd = new Date(draggedEvent.end_time);
+    const duration = differenceInMinutes(originalEnd, originalStart);
+
+    const newStart = new Date(targetDate);
+    newStart.setHours(targetHour, 0, 0, 0);
+    const newEnd = addMinutes(newStart, duration);
+
+    onEventUpdate({
+      eventId: draggedEvent.id,
+      start_time: newStart.toISOString(),
+      end_time: newEnd.toISOString(),
+    });
+
+    setDraggedEvent(null);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-[600px] w-full" />
+      </div>
+    );
+  }
 
   if (viewType === "month") {
     return (
@@ -131,17 +167,15 @@ export function CalendarView({ viewType, currentDate }: CalendarViewProps) {
                   {day.dayNumber}
                 </span>
                 <div className="space-y-1">
-                  {classesSampleData.map((classItem) => (
-                    dayHasClass(day.date, classItem) && (
-                      <button
-                        key={classItem.id}
-                        onClick={() => setSelectedClass(classItem)}
-                        className="w-full text-left px-2 py-1 rounded text-xs text-white truncate"
-                        style={{ backgroundColor: classItem.color }}
-                      >
-                        {classItem.language} - {classItem.level}
-                      </button>
-                    )
+                  {getEventsForDay(day.date).map((event) => (
+                    <button
+                      key={event.id}
+                      onClick={() => setSelectedEvent(event)}
+                      className="w-full text-left px-2 py-1 rounded text-xs text-white truncate"
+                      style={{ backgroundColor: event.class ? "#8B5CF6" : "#D946EF" }}
+                    >
+                      {event.class ? `${event.class.language} - ${event.class.level}` : event.title}
+                    </button>
                   ))}
                 </div>
               </div>
@@ -149,13 +183,7 @@ export function CalendarView({ viewType, currentDate }: CalendarViewProps) {
           </div>
         </div>
 
-        {selectedClass && (
-          <ClassDetailsDialog
-            open={!!selectedClass}
-            onOpenChange={(open) => !open && setSelectedClass(null)}
-            classData={selectedClass}
-          />
-        )}
+        {/* Details dialog can be added later for event details */}
       </>
     );
   }
@@ -193,30 +221,47 @@ export function CalendarView({ viewType, currentDate }: CalendarViewProps) {
               </div>
               <div className="grid grid-rows-[repeat(24,minmax(60px,1fr))] gap-px">
                 {Array.from({ length: 24 }).map((_, hourIndex) => {
-                  const currentHour = `${String(hourIndex).padStart(2, "0")}:00`;
+                  const dayEvents = getEventsForDay(currentDate);
+                  const conflicts = detectConflicts(dayEvents);
                   
                   return (
                     <div
                       key={hourIndex}
                       className="p-1 border-r border-b bg-background relative"
+                      onDrop={handleDrop(currentDate, hourIndex)}
+                      onDragOver={handleDragOver}
                     >
-                      {classesSampleData.map((classItem) => {
-                        if (
-                          classItem.time === currentHour &&
-                          dayHasClass(currentDate, classItem)
-                        ) {
-                          return (
-                            <button
-                              key={classItem.id}
-                              onClick={() => setSelectedClass(classItem)}
-                              className="absolute inset-x-1 top-1 px-2 py-1 rounded text-xs text-white truncate"
-                              style={{ backgroundColor: classItem.color }}
-                            >
-                              {classItem.language} - {classItem.level}
-                            </button>
-                          );
-                        }
-                        return null;
+                      {dayEvents.map((event) => {
+                        const eventStart = new Date(event.start_time);
+                        const eventHour = eventStart.getHours();
+                        const eventMinute = eventStart.getMinutes();
+                        
+                        if (eventHour !== hourIndex) return null;
+
+                        const eventEnd = new Date(event.end_time);
+                        const durationMinutes = differenceInMinutes(eventEnd, eventStart);
+                        const heightInPixels = (durationMinutes / 60) * 60;
+                        const topOffset = (eventMinute / 60) * 60;
+
+                        const conflict = conflicts.get(event.id);
+
+                        return (
+                          <EventCard
+                            key={event.id}
+                            event={event}
+                            onClick={() => setSelectedEvent(event)}
+                            style={{
+                              height: `${heightInPixels}px`,
+                              top: `${topOffset}px`,
+                            }}
+                            hasConflict={!!conflict}
+                            conflictPosition={conflict?.position}
+                            totalConflicts={conflict?.total}
+                            draggable={!isUpdating}
+                            onDragStart={handleDragStart(event)}
+                            onDragEnd={handleDragEnd}
+                          />
+                        );
                       })}
                     </div>
                   );
@@ -226,13 +271,7 @@ export function CalendarView({ viewType, currentDate }: CalendarViewProps) {
           </ScrollArea>
         </div>
 
-        {selectedClass && (
-          <ClassDetailsDialog
-            open={!!selectedClass}
-            onOpenChange={(open) => !open && setSelectedClass(null)}
-            classData={selectedClass}
-          />
-        )}
+        {/* Details dialog can be added later for event details */}
       </>
     );
   }
@@ -272,31 +311,48 @@ export function CalendarView({ viewType, currentDate }: CalendarViewProps) {
               {Array.from({ length: 7 * 24 }).map((_, i) => {
                 const dayIndex = Math.floor(i / 24);
                 const hourIndex = i % 24;
-                const currentHour = `${String(hourIndex).padStart(2, "0")}:00`;
                 const currentDayDate = addDays(startOfWeek(currentDate, { weekStartsOn: 0 }), dayIndex);
+                const dayEvents = getEventsForDay(currentDayDate);
+                const conflicts = detectConflicts(dayEvents);
                 
                 return (
                   <div
                     key={i}
                     className="p-1 border-r border-b bg-background relative"
+                    onDrop={handleDrop(currentDayDate, hourIndex)}
+                    onDragOver={handleDragOver}
                   >
-                    {classesSampleData.map((classItem) => {
-                      if (
-                        classItem.time === currentHour &&
-                        dayHasClass(currentDayDate, classItem)
-                      ) {
-                        return (
-                          <button
-                            key={classItem.id}
-                            onClick={() => setSelectedClass(classItem)}
-                            className="absolute inset-x-1 top-1 px-2 py-1 rounded text-xs text-white truncate"
-                            style={{ backgroundColor: classItem.color }}
-                          >
-                            {classItem.language} - {classItem.level}
-                          </button>
-                        );
-                      }
-                      return null;
+                    {dayEvents.map((event) => {
+                      const eventStart = new Date(event.start_time);
+                      const eventHour = eventStart.getHours();
+                      const eventMinute = eventStart.getMinutes();
+                      
+                      if (eventHour !== hourIndex) return null;
+
+                      const eventEnd = new Date(event.end_time);
+                      const durationMinutes = differenceInMinutes(eventEnd, eventStart);
+                      const heightInPixels = (durationMinutes / 60) * 60;
+                      const topOffset = (eventMinute / 60) * 60;
+
+                      const conflict = conflicts.get(event.id);
+
+                      return (
+                        <EventCard
+                          key={event.id}
+                          event={event}
+                          onClick={() => setSelectedEvent(event)}
+                          style={{
+                            height: `${heightInPixels}px`,
+                            top: `${topOffset}px`,
+                          }}
+                          hasConflict={!!conflict}
+                          conflictPosition={conflict?.position}
+                          totalConflicts={conflict?.total}
+                          draggable={!isUpdating}
+                          onDragStart={handleDragStart(event)}
+                          onDragEnd={handleDragEnd}
+                        />
+                      );
                     })}
                   </div>
                 );
@@ -306,13 +362,7 @@ export function CalendarView({ viewType, currentDate }: CalendarViewProps) {
         </ScrollArea>
       </div>
 
-      {selectedClass && (
-        <ClassDetailsDialog
-          open={!!selectedClass}
-          onOpenChange={(open) => !open && setSelectedClass(null)}
-          classData={selectedClass}
-        />
-      )}
+      {/* Details dialog can be added later for event details */}
     </>
   );
 }
