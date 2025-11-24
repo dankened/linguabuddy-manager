@@ -483,6 +483,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      delete_future_class_events: {
+        Args: { p_class_id: string }
+        Returns: undefined
+      }
+      generate_class_events: {
+        Args: { p_class_id: string }
+        Returns: undefined
+      }
       get_current_user_role: {
         Args: never
         Returns: Database["public"]["Enums"]["user_role"]
