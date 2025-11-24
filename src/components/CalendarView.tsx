@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import ClassDetailsDialog from "./ClassDetailsDialog";
 
 interface CalendarViewProps {
-  viewType: "week" | "month";
+  viewType: "day" | "week" | "month";
   currentDate: Date;
 }
 
@@ -160,6 +160,84 @@ export function CalendarView({ viewType, currentDate }: CalendarViewProps) {
     );
   }
 
+  // Visão de Dia: mostrar apenas 1 coluna
+  if (viewType === "day") {
+    const dayInfo = {
+      short: format(currentDate, "EEE", { locale: ptBR }),
+      full: format(currentDate, "EEEE", { locale: ptBR }),
+      date: format(currentDate, "dd/MM"),
+    };
+
+    return (
+      <>
+        <div className="border rounded-lg">
+          <div className="grid grid-cols-[60px_1fr] border-b">
+            <div className="p-2 text-sm font-medium text-center bg-muted" />
+            <div className="p-2 text-sm font-medium text-center bg-muted">
+              <div className="capitalize">{dayInfo.full}</div>
+              <div className="text-muted-foreground">{dayInfo.date}</div>
+            </div>
+          </div>
+          
+          <ScrollArea className="h-[600px]">
+            <div className="grid grid-cols-[60px_1fr]">
+              <div className="grid grid-rows-[repeat(24,minmax(60px,1fr))] bg-muted">
+                {hours.map((hour) => (
+                  <div
+                    key={hour}
+                    className="p-2 text-sm font-medium text-center border-r relative flex items-center justify-end pr-3"
+                  >
+                    {hour}
+                  </div>
+                ))}
+              </div>
+              <div className="grid grid-rows-[repeat(24,minmax(60px,1fr))] gap-px">
+                {Array.from({ length: 24 }).map((_, hourIndex) => {
+                  const currentHour = `${String(hourIndex).padStart(2, "0")}:00`;
+                  
+                  return (
+                    <div
+                      key={hourIndex}
+                      className="p-1 border-r border-b bg-background relative"
+                    >
+                      {classesSampleData.map((classItem) => {
+                        if (
+                          classItem.time === currentHour &&
+                          dayHasClass(currentDate, classItem)
+                        ) {
+                          return (
+                            <button
+                              key={classItem.id}
+                              onClick={() => setSelectedClass(classItem)}
+                              className="absolute inset-x-1 top-1 px-2 py-1 rounded text-xs text-white truncate"
+                              style={{ backgroundColor: classItem.color }}
+                            >
+                              {classItem.language} - {classItem.level}
+                            </button>
+                          );
+                        }
+                        return null;
+                      })}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </ScrollArea>
+        </div>
+
+        {selectedClass && (
+          <ClassDetailsDialog
+            open={!!selectedClass}
+            onOpenChange={(open) => !open && setSelectedClass(null)}
+            classData={selectedClass}
+          />
+        )}
+      </>
+    );
+  }
+
+  // Visão de Semana (padrão)
   return (
     <>
       <div className="border rounded-lg">
