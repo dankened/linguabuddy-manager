@@ -12,7 +12,7 @@ export const AppSidebar = () => {
   } = useAuth();
   return <Sidebar className="fixed bg-card">
       <div className="px-3 py-2">
-        <h2 className="mb-2 px-4 text-xl font-semibold tracking-tight py-[16px]">
+        <h2 className="mb-2 px-4 text-xl font-semibold tracking-tight py-[16px] text-left">
           Buddy App 
         </h2>
         <div className="space-y-1 my-[9px] py-[9px]">
