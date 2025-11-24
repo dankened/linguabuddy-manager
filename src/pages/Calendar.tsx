@@ -5,7 +5,7 @@ import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Filter, Plus, Sear
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { CreateEventDialog } from "@/components/CreateEventDialog";
-import { format, addMonths, subMonths, addWeeks, subWeeks } from "date-fns";
+import { format, addMonths, subMonths, addWeeks, subWeeks, addDays, subDays, startOfWeek, endOfWeek } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -15,22 +15,42 @@ const CalendarPage = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showCreateEvent, setShowCreateEvent] = useState(false);
-  const [viewType, setViewType] = useState<"week" | "month">("week");
+  const [viewType, setViewType] = useState<"day" | "week" | "month">("week");
   const [currentDate, setCurrentDate] = useState(new Date(2025, 0, 1)); // Janeiro 2025
 
   const handlePrevious = () => {
     if (viewType === "month") {
       setCurrentDate((prev) => subMonths(prev, 1));
-    } else {
+    } else if (viewType === "week") {
       setCurrentDate((prev) => subWeeks(prev, 1));
+    } else {
+      setCurrentDate((prev) => subDays(prev, 1));
     }
   };
 
   const handleNext = () => {
     if (viewType === "month") {
       setCurrentDate((prev) => addMonths(prev, 1));
-    } else {
+    } else if (viewType === "week") {
       setCurrentDate((prev) => addWeeks(prev, 1));
+    } else {
+      setCurrentDate((prev) => addDays(prev, 1));
+    }
+  };
+
+  const handleToday = () => {
+    setCurrentDate(new Date());
+  };
+
+  const getDisplayTitle = () => {
+    if (viewType === "month") {
+      return format(currentDate, "MMMM yyyy", { locale: ptBR });
+    } else if (viewType === "week") {
+      const start = startOfWeek(currentDate, { weekStartsOn: 0 });
+      const end = endOfWeek(currentDate, { weekStartsOn: 0 });
+      return `${format(start, "dd", { locale: ptBR })} - ${format(end, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}`;
+    } else {
+      return format(currentDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
     }
   };
 
@@ -76,8 +96,15 @@ const CalendarPage = () => {
           <div className="flex items-center gap-4">
             <div className="flex items-center rounded-lg border">
               <Button
-                variant={viewType === "week" ? "secondary" : "ghost"}
+                variant={viewType === "day" ? "secondary" : "ghost"}
                 className="rounded-r-none"
+                onClick={() => setViewType("day")}
+              >
+                Dia
+              </Button>
+              <Button
+                variant={viewType === "week" ? "secondary" : "ghost"}
+                className="rounded-none border-x"
                 onClick={() => setViewType("week")}
               >
                 Semana
@@ -121,12 +148,12 @@ const CalendarPage = () => {
                 <Button
                   variant="outline"
                   className={cn(
-                    "justify-start text-left font-normal",
+                    "justify-start text-left font-normal min-w-[200px]",
                     !currentDate && "text-muted-foreground"
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {format(currentDate, "MMMM yyyy", { locale: ptBR })}
+                  {getDisplayTitle()}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -141,6 +168,13 @@ const CalendarPage = () => {
                 />
               </PopoverContent>
             </Popover>
+
+            <Button 
+              variant="outline"
+              onClick={handleToday}
+            >
+              Hoje
+            </Button>
           </div>
         </div>
 
