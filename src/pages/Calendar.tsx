@@ -5,18 +5,32 @@ import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Filter, Plus, Sear
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { CreateEventDialog } from "@/components/CreateEventDialog";
+import { FilterDialog } from "@/components/FilterDialog";
 import { format, addMonths, subMonths, addWeeks, subWeeks, addDays, subDays, startOfWeek, endOfWeek } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
+import { useEvents } from "@/hooks/useEvents";
 
 const CalendarPage = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showCreateEvent, setShowCreateEvent] = useState(false);
+  const [showFilterDialog, setShowFilterDialog] = useState(false);
   const [viewType, setViewType] = useState<"day" | "week" | "month">("week");
-  const [currentDate, setCurrentDate] = useState(new Date(2025, 0, 1)); // Janeiro 2025
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [filters, setFilters] = useState<{
+    classId: string | null;
+    language: string | null;
+    level: string | null;
+  }>({
+    classId: null,
+    language: null,
+    level: null,
+  });
+
+  const { events, isLoading, updateEvent, isUpdating } = useEvents(currentDate, viewType, filters);
 
   const handlePrevious = () => {
     if (viewType === "month") {
@@ -89,7 +103,11 @@ const CalendarPage = () => {
                 <Search className="h-4 w-4" />
               </Button>
             )}
-            <Button variant="outline" size="icon">
+            <Button 
+              variant="outline" 
+              size="icon"
+              onClick={() => setShowFilterDialog(true)}
+            >
               <Filter className="h-4 w-4" />
             </Button>
           </div>
@@ -178,11 +196,25 @@ const CalendarPage = () => {
           </div>
         </div>
 
-        <CalendarView viewType={viewType} currentDate={currentDate} />
+        <CalendarView 
+          viewType={viewType} 
+          currentDate={currentDate} 
+          events={events}
+          isLoading={isLoading}
+          onEventUpdate={updateEvent}
+          isUpdating={isUpdating}
+        />
 
         <CreateEventDialog
           open={showCreateEvent}
           onOpenChange={setShowCreateEvent}
+        />
+
+        <FilterDialog
+          open={showFilterDialog}
+          onOpenChange={setShowFilterDialog}
+          onApplyFilters={setFilters}
+          currentFilters={filters}
         />
     </div>
   );
