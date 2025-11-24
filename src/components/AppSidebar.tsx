@@ -12,10 +12,10 @@ export const AppSidebar = () => {
   } = useAuth();
   return <Sidebar className="fixed bg-card">
       <div className="px-3 py-2">
-        <h2 className="mb-2 px-4 text-xl font-semibold tracking-tight">
+        <h2 className="mb-2 px-4 text-xl font-semibold tracking-tight py-[16px]">
           Buddy App 
         </h2>
-        <div className="space-y-1">
+        <div className="space-y-1 my-[9px] py-[9px]">
           <Link to="/" className={cn("flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:text-primary", pathname === "/" ? "bg-secondary text-white" : "text-gray-700")}>
             <Home className="h-4 w-4" />
             Dashboard
