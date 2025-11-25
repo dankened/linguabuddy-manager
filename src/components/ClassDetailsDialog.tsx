@@ -147,30 +147,18 @@ const ClassDetailsDialog = ({
   const handleStudentSelect = (studentId: string) => {
     setSelectedStudentId(studentId);
     setComboboxOpen(false);
+    setIsNewStudent(false);
     
-    if (studentId === "new") {
-      setIsNewStudent(true);
+    const student = availableStudents.find(s => s.id === studentId);
+    if (student) {
       setNewStudent({
-        name: "",
-        phone: "",
-        email: "",
-        birthday: "",
-        monthlyFee: 0,
-        paymentDay: 1,
+        name: `${student.first_name || ''} ${student.last_name || ''}`.trim(),
+        email: student.email,
+        phone: student.phone || "",
+        birthday: student.birthday || "",
+        monthlyFee: student.monthly_fee || 0,
+        paymentDay: student.payment_day || 1,
       });
-    } else {
-      setIsNewStudent(false);
-      const student = availableStudents.find(s => s.id === studentId);
-      if (student) {
-        setNewStudent({
-          name: `${student.first_name || ''} ${student.last_name || ''}`.trim(),
-          email: student.email,
-          phone: student.phone || "",
-          birthday: student.birthday || "",
-          monthlyFee: student.monthly_fee || 0,
-          paymentDay: student.payment_day || 1,
-        });
-      }
     }
   };
 
@@ -183,12 +171,58 @@ const ClassDetailsDialog = ({
   const handleAddStudent = async () => {
     try {
       if (isNewStudent) {
-        // Create new student - would need to be implemented via edge function
-        toast({
-          title: "Funcionalidade em desenvolvimento",
-          description: "Criar novo aluno via turma será implementado em breve.",
-          variant: "destructive",
+        // Create new student via edge function
+        if (!newStudent.name || !newStudent.email) {
+          toast({
+            title: "Erro",
+            description: "Nome e e-mail são obrigatórios.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        // Split name into first and last name
+        const nameParts = newStudent.name.trim().split(' ');
+        const firstName = nameParts[0];
+        const lastName = nameParts.slice(1).join(' ') || '';
+
+        // Generate a temporary password
+        const tempPassword = `Temp${Math.random().toString(36).slice(-8)}!`;
+
+        const { error } = await supabase.functions.invoke('create-student', {
+          body: {
+            email: newStudent.email,
+            password: tempPassword,
+            firstName,
+            lastName,
+            birthday: newStudent.birthday || null,
+            phone: newStudent.phone || null,
+            monthlyFee: newStudent.monthlyFee || 0,
+            paymentDay: newStudent.paymentDay || 1,
+            classIds: [classData.id],
+          }
         });
+
+        if (error) throw error;
+
+        toast({
+          title: "Aluno criado",
+          description: `O aluno foi criado com sucesso. Senha temporária: ${tempPassword}`,
+        });
+        
+        setShowAddForm(false);
+        setSelectedStudentId("");
+        setNewStudent({
+          name: "",
+          phone: "",
+          email: "",
+          birthday: "",
+          monthlyFee: 0,
+          paymentDay: 1,
+        });
+        
+        // Refresh the page
+        window.location.reload();
       } else {
         // Enroll existing student in class
         const { error } = await supabase
@@ -338,66 +372,80 @@ const ClassDetailsDialog = ({
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Nome</label>
-                    <Popover open={comboboxOpen} onOpenChange={setComboboxOpen}>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          role="combobox"
-                          aria-expanded={comboboxOpen}
-                          className="w-full justify-between"
-                        >
-                          {selectedStudentId
-                            ? selectedStudentId === "new"
-                              ? "Criar novo aluno"
-                              : availableStudents.find((s) => s.id === selectedStudentId)
+                    {isNewStudent ? (
+                      <Input
+                        value={newStudent.name}
+                        onChange={(e) =>
+                          setNewStudent({ ...newStudent, name: e.target.value })
+                        }
+                        placeholder="Digite o nome completo do aluno"
+                      />
+                    ) : (
+                      <Popover open={comboboxOpen} onOpenChange={setComboboxOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={comboboxOpen}
+                            className="w-full justify-between"
+                          >
+                            {selectedStudentId
+                              ? availableStudents.find((s) => s.id === selectedStudentId)
                                 ? `${availableStudents.find((s) => s.id === selectedStudentId)?.first_name} ${availableStudents.find((s) => s.id === selectedStudentId)?.last_name}`
                                 : "Selecione um aluno..."
-                            : "Selecione um aluno..."}
-                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-[400px] p-0">
-                        <Command>
-                          <CommandInput placeholder="Buscar aluno..." />
-                          <CommandList>
-                            <CommandEmpty>Nenhum aluno encontrado.</CommandEmpty>
-                            <CommandGroup>
-                              <CommandItem
-                                value="new"
-                                onSelect={() => handleStudentSelect("new")}
-                              >
-                                <Check
-                                  className={cn(
-                                    "mr-2 h-4 w-4",
-                                    selectedStudentId === "new" ? "opacity-100" : "opacity-0"
-                                  )}
-                                />
-                                <Plus className="mr-2 h-4 w-4" />
-                                Criar novo aluno
-                              </CommandItem>
-                              {availableStudents.map((student) => (
+                              : "Selecione um aluno..."}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[400px] p-0">
+                          <Command>
+                            <CommandInput placeholder="Buscar aluno..." />
+                            <CommandList>
+                              <CommandEmpty>Nenhum aluno encontrado.</CommandEmpty>
+                              <CommandGroup>
                                 <CommandItem
-                                  key={student.id}
-                                  value={`${student.first_name} ${student.last_name} ${student.email}`}
-                                  onSelect={() => handleStudentSelect(student.id)}
+                                  value="new"
+                                  onSelect={() => {
+                                    setIsNewStudent(true);
+                                    setSelectedStudentId("");
+                                    setComboboxOpen(false);
+                                    setNewStudent({
+                                      name: "",
+                                      phone: "",
+                                      email: "",
+                                      birthday: "",
+                                      monthlyFee: 0,
+                                      paymentDay: 1,
+                                    });
+                                  }}
                                 >
-                                  <Check
-                                    className={cn(
-                                      "mr-2 h-4 w-4",
-                                      selectedStudentId === student.id ? "opacity-100" : "opacity-0"
-                                    )}
-                                  />
-                                  {student.first_name} {student.last_name}
-                                  <span className="ml-2 text-sm text-muted-foreground">
-                                    ({student.email})
-                                  </span>
+                                  <Plus className="mr-2 h-4 w-4" />
+                                  Criar novo aluno
                                 </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
+                                {availableStudents.map((student) => (
+                                  <CommandItem
+                                    key={student.id}
+                                    value={`${student.first_name} ${student.last_name} ${student.email}`}
+                                    onSelect={() => handleStudentSelect(student.id)}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        selectedStudentId === student.id ? "opacity-100" : "opacity-0"
+                                      )}
+                                    />
+                                    {student.first_name} {student.last_name}
+                                    <span className="ml-2 text-sm text-muted-foreground">
+                                      ({student.email})
+                                    </span>
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Telefone</label>
@@ -461,7 +509,7 @@ const ClassDetailsDialog = ({
                 <div className="flex justify-end">
                   <Button 
                     onClick={handleAddStudent}
-                    disabled={!selectedStudentId}
+                    disabled={isNewStudent ? !newStudent.name || !newStudent.email : !selectedStudentId}
                   >
                     {isNewStudent ? "Criar e Adicionar" : "Adicionar à Turma"}
                   </Button>
