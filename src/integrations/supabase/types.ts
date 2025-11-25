@@ -439,6 +439,7 @@ export type Database = {
       }
       students: {
         Row: {
+          active: boolean
           birthday: string | null
           created_at: string
           id: string
@@ -449,6 +450,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          active?: boolean
           birthday?: string | null
           created_at?: string
           id: string
@@ -459,6 +461,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          active?: boolean
           birthday?: string | null
           created_at?: string
           id?: string

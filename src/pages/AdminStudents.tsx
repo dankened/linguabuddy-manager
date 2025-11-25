@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { UserPlus, Search, Edit, Trash2 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import StudentDetailsDialog from "@/components/StudentDetailsDialog";
+import { cn } from "@/lib/utils";
 
 interface Student {
   id: string;
@@ -20,6 +21,7 @@ interface Student {
   first_name: string | null;
   last_name: string | null;
   created_at: string;
+  active?: boolean;
 }
 
 interface StudentDetails extends Student {
@@ -28,6 +30,7 @@ interface StudentDetails extends Student {
   monthly_fee: number | null;
   payment_day: number | null;
   notes: string | null;
+  active: boolean;
 }
 
 interface ClassData {
@@ -67,14 +70,33 @@ export default function AdminStudents() {
 
   const fetchStudents = async () => {
     try {
-      const { data, error } = await supabase
+      // Fetch profiles
+      const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select('id, email, first_name, last_name, created_at')
         .eq('role', 'student')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setStudents(data || []);
+      if (profilesError) throw profilesError;
+
+      // Fetch student details including active status
+      const { data: studentsData, error: studentsError } = await supabase
+        .from('students')
+        .select('id, active')
+        .in('id', profilesData?.map(p => p.id) || []);
+
+      if (studentsError) throw studentsError;
+
+      // Combine data
+      const combined = profilesData?.map(profile => {
+        const studentDetails = studentsData?.find(s => s.id === profile.id);
+        return {
+          ...profile,
+          active: studentDetails?.active || false,
+        };
+      }) || [];
+
+      setStudents(combined);
     } catch (error) {
       console.error('Error fetching students:', error);
       toast({
@@ -415,6 +437,7 @@ export default function AdminStudents() {
                 <TableRow>
                   <TableHead>Nome</TableHead>
                   <TableHead>Email</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead>Data de Cadastro</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
@@ -430,6 +453,16 @@ export default function AdminStudents() {
                       {student.first_name} {student.last_name}
                     </TableCell>
                     <TableCell>{student.email}</TableCell>
+                    <TableCell>
+                      <span className={cn(
+                        "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
+                        student.active 
+                          ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                          : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400"
+                      )}>
+                        {student.active ? "Ativo" : "Inativo"}
+                      </span>
+                    </TableCell>
                     <TableCell>
                       {new Date(student.created_at).toLocaleDateString('pt-BR')}
                     </TableCell>
