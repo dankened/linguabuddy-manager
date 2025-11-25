@@ -45,6 +45,7 @@ export default function AdminStudents() {
   const [classes, setClasses] = useState<ClassData[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [selectedStudentId, setSelectedStudentId] = useState<string>("");
@@ -238,11 +239,22 @@ export default function AdminStudents() {
     setDetailsDialogOpen(true);
   };
 
-  const filteredStudents = students.filter(student =>
-    student.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.last_name?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredStudents = students.filter(student => {
+    // Filter by search term
+    const matchesSearch = student.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      student.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      student.last_name?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    // Filter by status
+    const matchesStatus = statusFilter === "all" ? true :
+      statusFilter === "active" ? student.active :
+      !student.active;
+    
+    return matchesSearch && matchesStatus;
+  });
+
+  const activeCount = students.filter(s => s.active).length;
+  const inactiveCount = students.filter(s => !s.active).length;
 
   return (
     <div className="space-y-6 p-6">
@@ -410,16 +422,43 @@ export default function AdminStudents() {
         <CardHeader>
           <CardTitle>Estudantes Cadastrados</CardTitle>
           <CardDescription>
-            {students.length} estudante(s) no total
+            {students.length} estudante(s) no total • {activeCount} ativo(s) • {inactiveCount} inativo(s)
           </CardDescription>
-          <div className="relative mt-4">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar por nome ou email..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-8"
-            />
+          
+          <div className="space-y-4 mt-4">
+            <div className="flex gap-2">
+              <Button
+                variant={statusFilter === "all" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setStatusFilter("all")}
+              >
+                Todos ({students.length})
+              </Button>
+              <Button
+                variant={statusFilter === "active" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setStatusFilter("active")}
+              >
+                Ativos ({activeCount})
+              </Button>
+              <Button
+                variant={statusFilter === "inactive" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setStatusFilter("inactive")}
+              >
+                Inativos ({inactiveCount})
+              </Button>
+            </div>
+            
+            <div className="relative">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por nome ou email..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-8"
+              />
+            </div>
           </div>
         </CardHeader>
         <CardContent>
