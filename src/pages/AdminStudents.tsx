@@ -184,8 +184,10 @@ export default function AdminStudents() {
     try {
       setLoading(true);
 
-      // Delete student profile and related data (cascades will handle the rest)
-      const { error } = await supabase.auth.admin.deleteUser(studentToDelete);
+      // Call edge function to delete student
+      const { error } = await supabase.functions.invoke('delete-student', {
+        body: { studentId: studentToDelete }
+      });
 
       if (error) throw error;
 
