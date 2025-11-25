@@ -5,7 +5,7 @@ import ClassDetailsDialog from "./ClassDetailsDialog";
 // Expanded mock data to include student information
 const mockClasses = [
   {
-    id: 1,
+    id: "1",
     language: "Inglês",
     level: "Intermediário",
     type: "Turma",
@@ -13,14 +13,14 @@ const mockClasses = [
     time: "19:00",
     students: [
       {
-        id: 1,
+        id: "1",
         name: "João Silva",
         phone: "(11) 99999-9999",
         email: "joao@email.com",
         birthday: "1990-01-01",
       },
       {
-        id: 2,
+        id: "2",
         name: "Maria Santos",
         phone: "(11) 88888-8888",
         email: "maria@email.com",
@@ -30,7 +30,7 @@ const mockClasses = [
     active: true,
   },
   {
-    id: 2,
+    id: "2",
     language: "Espanhol",
     level: "Iniciante",
     type: "Particular",
@@ -38,7 +38,7 @@ const mockClasses = [
     time: "10:00",
     students: [
       {
-        id: 3,
+        id: "3",
         name: "Pedro Souza",
         phone: "(11) 77777-7777",
         email: "pedro@email.com",
@@ -48,7 +48,7 @@ const mockClasses = [
     active: true,
   },
   {
-    id: 3,
+    id: "3",
     language: "Inglês",
     level: "Avançado",
     type: "Turma",
@@ -56,7 +56,7 @@ const mockClasses = [
     time: "18:00",
     students: [
       {
-        id: 4,
+        id: "4",
         name: "Ana Costa",
         phone: "(11) 66666-6666",
         email: "ana@email.com",

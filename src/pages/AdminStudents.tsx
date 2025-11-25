@@ -6,11 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { UserPlus, Search, Edit, Trash2 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
+import StudentDetailsDialog from "@/components/StudentDetailsDialog";
 
 interface Student {
   id: string;
@@ -41,6 +43,10 @@ export default function AdminStudents() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
+  const [selectedStudentId, setSelectedStudentId] = useState<string>("");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [studentToDelete, setStudentToDelete] = useState<string>("");
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -172,6 +178,40 @@ export default function AdminStudents() {
         ? prev.selectedClasses.filter(id => id !== classId)
         : [...prev.selectedClasses, classId]
     }));
+  };
+
+  const handleDeleteStudent = async () => {
+    try {
+      setLoading(true);
+
+      // Delete student profile and related data (cascades will handle the rest)
+      const { error } = await supabase.auth.admin.deleteUser(studentToDelete);
+
+      if (error) throw error;
+
+      toast({
+        title: "Estudante excluído",
+        description: "O estudante foi removido com sucesso.",
+      });
+
+      setDeleteDialogOpen(false);
+      setStudentToDelete("");
+      fetchStudents();
+    } catch (error: any) {
+      console.error('Error deleting student:', error);
+      toast({
+        title: "Erro ao excluir estudante",
+        description: error.message || "Não foi possível excluir o estudante.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRowClick = (studentId: string) => {
+    setSelectedStudentId(studentId);
+    setDetailsDialogOpen(true);
   };
 
   const filteredStudents = students.filter(student =>
@@ -379,7 +419,11 @@ export default function AdminStudents() {
               </TableHeader>
               <TableBody>
                 {filteredStudents.map((student) => (
-                  <TableRow key={student.id}>
+                  <TableRow 
+                    key={student.id}
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => handleRowClick(student.id)}
+                  >
                     <TableCell className="font-medium">
                       {student.first_name} {student.last_name}
                     </TableCell>
@@ -387,11 +431,28 @@ export default function AdminStudents() {
                     <TableCell>
                       {new Date(student.created_at).toLocaleDateString('pt-BR')}
                     </TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" className="mr-2">
+                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="mr-2"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedStudentId(student.id);
+                          setDetailsDialogOpen(true);
+                        }}
+                      >
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setStudentToDelete(student.id);
+                          setDeleteDialogOpen(true);
+                        }}
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </TableCell>
@@ -402,6 +463,35 @@ export default function AdminStudents() {
           )}
         </CardContent>
       </Card>
+
+      <StudentDetailsDialog
+        open={detailsDialogOpen}
+        onOpenChange={setDetailsDialogOpen}
+        studentId={selectedStudentId}
+        onUpdate={fetchStudents}
+      />
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir este estudante? Esta ação não pode ser desfeita.
+              Todos os dados relacionados ao estudante serão removidos permanentemente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteStudent}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
+
