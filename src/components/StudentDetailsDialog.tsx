@@ -13,6 +13,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface StudentDetailsDialogProps {
   open: boolean;
@@ -32,6 +33,7 @@ interface StudentData {
   payment_day: number | null;
   notes: string | null;
   created_at: string;
+  active: boolean;
 }
 
 export default function StudentDetailsDialog({
@@ -89,6 +91,7 @@ export default function StudentDetailsDialog({
         monthly_fee: studentData?.monthly_fee || null,
         payment_day: studentData?.payment_day || null,
         notes: studentData?.notes || null,
+        active: studentData?.active || false,
       };
 
       setStudent(combined);
@@ -199,6 +202,26 @@ export default function StudentDetailsDialog({
             <div className="space-y-2">
               <Label>Email</Label>
               <Input value={student.email} disabled />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Status</Label>
+              <div className="flex items-center h-10 px-3 py-2 rounded-md border border-input bg-muted">
+                <span className={cn(
+                  "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
+                  student.active 
+                    ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                    : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400"
+                )}>
+                  {student.active ? "Ativo" : "Inativo"}
+                </span>
+                <span className="ml-2 text-xs text-muted-foreground">
+                  {student.active 
+                    ? "Aluno matriculado em turma(s)" 
+                    : "Aluno sem matrículas ativas"
+                  }
+                </span>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
